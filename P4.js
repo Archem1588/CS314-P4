@@ -78,6 +78,7 @@ function updateWorld() {
 
 
 // KEYBOARD
+var rotationSpeed = Math.PI/9;
 
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
@@ -89,6 +90,19 @@ function keyEvent(event) {
         grid_state? scene.add(grid) : scene.remove(grid);
     }
     
+    // ARROW KEYS
+    else if(keyboard.eventMatches(event, "left")) {
+        sphere.applyMatrix(new THREE.Matrix4().makeRotationY(rotationSpeed));
+    }
+    else if(keyboard.eventMatches(event, "right")) {
+        sphere.applyMatrix(new THREE.Matrix4().makeRotationY(-rotationSpeed));
+    }
+    else if(keyboard.eventMatches(event, "up")) {
+        sphere.applyMatrix(new THREE.Matrix4().makeRotationX(-rotationSpeed));
+    }
+    else if(keyboard.eventMatches(event, "down")) {
+        sphere.applyMatrix(new THREE.Matrix4().makeRotationX(rotationSpeed));
+    }
     
 };
 
