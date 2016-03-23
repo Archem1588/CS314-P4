@@ -45,64 +45,84 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 var grid_state = true;
 scene.add(grid);
 
-
+// SETTING MATRIX
+THREE.Object3D.prototype.setMatrix = function(a) {
+  this.matrix = a;
+  this.matrix.decompose(this.position, this.quaternion, this.scale);
+}
 
 
 // GEOMETRY
 var geometry;
 var material;
 var sphere;
+var sphereMatrix;
 geometry = new THREE.SphereGeometry(5, 32, 32);
 material = new THREE.MeshBasicMaterial({
     map: new THREE.TextureLoader().load('./earthmap.jpg'),
 });
 sphere = new THREE.Mesh(geometry, material);
+sphereMatrix = new THREE.Matrix4().identity();
+sphere.matrix = sphereMatrix;
 scene.add(sphere);
 
+// Matrix Variables
+var translationMatrix;
+var rotationMatrix;
 
 
-
-var clock = new THREE.Clock(true);
-var time_start = 0;
 
 function updateWorld() {
-    var time = clock.getElapsedTime();
-    var timeDelta = time - time_start;
-    time_start = time;
+    if (!freeze){
     
     
+    translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0.3);
+    sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, translationMatrix);
+    sphere.setMatrix(sphereMatrix);
     
+    
+    }
 }
 
 
 
 
 // KEYBOARD
-var rotationSpeed = Math.PI/9;
+var rotationSpeed = Math.PI/32;
 
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
 
+var freeze = true;
 function keyEvent(event) {
-    // helper grid
+    // helper grid (convenient for debugging)
     if(keyboard.eventMatches(event, "Z")) {
         grid_state = !grid_state;
         grid_state? scene.add(grid) : scene.remove(grid);
     }
+    // freeze behaviour (convenient for debugging)
+    else if(keyboard.eventMatches(event, "space")) {
+        freeze = !freeze;
+    }
     
     // ARROW KEYS
-    else if(keyboard.eventMatches(event, "left")) {
-        sphere.applyMatrix(new THREE.Matrix4().makeRotationY(rotationSpeed));
-    }
     else if(keyboard.eventMatches(event, "right")) {
-        sphere.applyMatrix(new THREE.Matrix4().makeRotationY(-rotationSpeed));
+        rotationMatrix = new THREE.Matrix4().makeRotationY(-rotationSpeed);
+        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+    }
+    else if(keyboard.eventMatches(event, "left")) {
+        rotationMatrix = new THREE.Matrix4().makeRotationY(rotationSpeed);
+        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
     }
     else if(keyboard.eventMatches(event, "up")) {
-        sphere.applyMatrix(new THREE.Matrix4().makeRotationX(-rotationSpeed));
+        rotationMatrix = new THREE.Matrix4().makeRotationX(-rotationSpeed);
+        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
     }
     else if(keyboard.eventMatches(event, "down")) {
-        sphere.applyMatrix(new THREE.Matrix4().makeRotationX(rotationSpeed));
+        rotationMatrix = new THREE.Matrix4().makeRotationX(rotationSpeed);
+        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
     }
+    
     
 };
 
