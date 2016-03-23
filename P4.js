@@ -81,13 +81,35 @@ function updateWorld() {
     sphere.setMatrix(sphereMatrix);
     
     
+    
+    
+    
+    
+    // MOUSE EVENTS
+    if (mouseDown) {
+        var rotationMatrixX = new THREE.Matrix4().makeRotationY(
+            (rotationSpeed * -mouseX) / window.innerWidth);
+        var rotationMatrixY = new THREE.Matrix4().makeRotationX(
+            (rotationSpeed *  mouseY) / window.innerWidth);
+        rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
+        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     }
 }
 
 
 
 
-// KEYBOARD
+// KEYBOARD CONTROL
 var rotationSpeed = Math.PI/32;
 
 var keyboard = new THREEx.KeyboardState();
@@ -125,6 +147,25 @@ function keyEvent(event) {
     
     
 };
+
+// MOUSE CONTROL
+var rotationSpeeda = Math.PI;
+
+var mouseDown = false;
+var mouseX;
+var mouseY;
+
+document.addEventListener('mousedown', function(event) {
+    mouseDown = true;  });
+document.addEventListener('mouseup', function(event) {
+    mouseDown = false; });
+document.addEventListener('mousemove', function(event) {
+    mouseX = event.clientX - (window.innerWidth / 2);
+    mouseY = event.clientY - (window.innerHeight / 2);
+});
+
+
+
 
 
 // SETUP UPDATE CALL-BACK
