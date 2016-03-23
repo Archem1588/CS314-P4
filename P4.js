@@ -14,12 +14,6 @@ camera.position.set(0, 30, -120);
 camera.lookAt(scene.position);
 scene.add(camera);
 
-/* 
-// SETUP ORBIT CONTROL OF THE CAMERA
-var controls = new THREE.OrbitControls(camera);
-controls.damping = 0.2;
- */
-
 // ADAPT TO WINDOW RESIZE
 function resize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -51,34 +45,102 @@ THREE.Object3D.prototype.setMatrix = function(a) {
   this.matrix.decompose(this.position, this.quaternion, this.scale);
 }
 
+// USEFUL FUNCTIONS
+function getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
 
-// GEOMETRY
+
+
+
+// VARIABLES
+// General variables:
 var geometry;
 var material;
-var sphere;
-var sphereMatrix;
-geometry = new THREE.SphereGeometry(5, 32, 32);
+
+// Environment
+var envirn = {
+    size: 250, // box
+};
+
+// Game Controls
+var gameCtrl = {
+    rotationSpeed: Math.PI/32,
+};
+
+// Types of spheres:
+//   - player sphere      (pSphere)
+//   - stationary spheres (sSphere)
+//   - mobile spheres     (mSphere)
+//   - spiked spheres     (kSphere)
+
+var pSphere = {
+    mesh: null,
+    mat: null,
+    // properties
+    radius: 5,
+    texture: './earthmap.jpg',
+};
+
+var sSphere = {
+    mesh: [],
+    initialAmount: 20,
+    radius: {min: 1, max: 5},
+};
+
+var mSphere = {
+    radius: {min: 5, max: 10},
+};
+
+var kSphere = {
+    radius: {min: 1, max: 10},
+};
+
+
+
+
+// CREATING OBJECTS
+// pSphere
+geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
-    map: new THREE.TextureLoader().load('./earthmap.jpg'),
+    map: new THREE.TextureLoader().load(pSphere.texture),
 });
-sphere = new THREE.Mesh(geometry, material);
-sphereMatrix = new THREE.Matrix4().identity();
-sphere.matrix = sphereMatrix;
-scene.add(sphere);
+pSphere.mesh = new THREE.Mesh(geometry, material);
+pSphere.mat = new THREE.Matrix4().identity();
+pSphere.mesh.setMatrix(pSphere.mat);
+scene.add(pSphere.mesh);
 
-// Matrix Variables
-var translationMatrix;
-var rotationMatrix;
+// sSphere
+material = new THREE.MeshNormalMaterial();
+for (var i = 0; i < sSphere.initialAmount; i++) {
+    // create spheres
+    var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    sSphere.mesh[i] = new THREE.Mesh(geometry, material);
+    
+    // translate to random location in environment
+    var posX = getRandom(-envirn.size, envirn.size);
+    var posY = getRandom(-envirn.size, envirn.size);
+    var posZ = getRandom(-envirn.size, envirn.size);
+    var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
+    sSphere.mesh[i].applyMatrix(translationMatrix);
+    
+    // add to scene
+    scene.add(sSphere.mesh[i]);
+}
 
 
 
+
+
+// UPDATE FUNCTION
 function updateWorld() {
     if (!freeze){
     
     
-    translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0.3);
-    sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, translationMatrix);
-    sphere.setMatrix(sphereMatrix);
+    var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0.3);
+    pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
+    pSphere.mesh.setMatrix(pSphere.mat);
     
     
     
@@ -88,11 +150,11 @@ function updateWorld() {
     // MOUSE EVENTS
     if (mouseDown) {
         var rotationMatrixX = new THREE.Matrix4().makeRotationY(
-            (rotationSpeed * -mouseX) / window.innerWidth);
+            (gameCtrl.rotationSpeed * -mouseX) / window.innerWidth);
         var rotationMatrixY = new THREE.Matrix4().makeRotationX(
-            (rotationSpeed *  mouseY) / window.innerWidth);
-        rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
-        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+            (gameCtrl.rotationSpeed *  mouseY) / window.innerWidth);
+        var rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     
     
@@ -110,8 +172,6 @@ function updateWorld() {
 
 
 // KEYBOARD CONTROL
-var rotationSpeed = Math.PI/32;
-
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
 
@@ -129,28 +189,26 @@ function keyEvent(event) {
     
     // ARROW KEYS
     else if(keyboard.eventMatches(event, "right")) {
-        rotationMatrix = new THREE.Matrix4().makeRotationY(-rotationSpeed);
-        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(-gameCtrl.rotationSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if(keyboard.eventMatches(event, "left")) {
-        rotationMatrix = new THREE.Matrix4().makeRotationY(rotationSpeed);
-        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(gameCtrl.rotationSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if(keyboard.eventMatches(event, "up")) {
-        rotationMatrix = new THREE.Matrix4().makeRotationX(-rotationSpeed);
-        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(-gameCtrl.rotationSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if(keyboard.eventMatches(event, "down")) {
-        rotationMatrix = new THREE.Matrix4().makeRotationX(rotationSpeed);
-        sphereMatrix = new THREE.Matrix4().multiplyMatrices(sphereMatrix, rotationMatrix);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(gameCtrl.rotationSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     
     
 };
 
 // MOUSE CONTROL
-var rotationSpeeda = Math.PI;
-
 var mouseDown = false;
 var mouseX;
 var mouseY;
