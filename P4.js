@@ -10,9 +10,8 @@ document.body.appendChild(renderer.domElement);
 // SETUP CAMERA
 var aspect = window.innerWidth/window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
-camera.position.set(0, 30, -120);
-camera.lookAt(scene.position);
-scene.add(camera);
+camera.position.set(0, 0, -100);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 // ADAPT TO WINDOW RESIZE
 function resize() {
@@ -60,7 +59,7 @@ var material;
 
 // Environment
 var envirn = {
-    size: 250, // box
+    size: 100, // box
 };
 
 // Game Controls
@@ -84,8 +83,8 @@ var pSphere = {
 
 var sSphere = {
     mesh: [],
-    initialAmount: 20,
-    radius: {min: 1, max: 5},
+    initialAmount: 30,
+    radius: {min: 1, max: 3},
 };
 
 var mSphere = {
@@ -109,6 +108,7 @@ pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
 scene.add(pSphere.mesh);
+pSphere.mesh.add(camera);
 
 // sSphere
 material = new THREE.MeshNormalMaterial();
