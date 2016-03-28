@@ -1,5 +1,12 @@
 
 var scene = new THREE.Scene();
+var clock = new THREE.Clock(true);
+
+var difficulty = 1; // 1 = normal, 2 = hard, 3 = easy
+var timeRemaining = 120;
+var size = 5;
+var goal = 30;
+document.getElementById("goal").innerHTML = "Goal: " + parseInt(goal);
 
 // SETUP RENDERER
 var renderer = new THREE.WebGLRenderer();
@@ -138,6 +145,8 @@ for (var i = 0; i < sSphere.initialAmount; i++) {
 
 // UPDATE FUNCTION
 function updateWorld() {
+	updateTime();
+	updateSize();
     if (!freeze){
     
     // MOVE FORWARD
@@ -173,8 +182,32 @@ function updateWorld() {
     }
 }
 
+function updateDifficulty() {
+	var text = "";
+	if (difficulty == 1) {
+		text = "Difficulty: normal";
+	}
+	if (difficulty == 2) {
+		text = "Difficulty: hard";
+	}
+	if (difficulty == 3) {
+		text = "Difficulty: easy";
+	}
+	document.getElementById("difficulty").innerHTML = text;
+}
 
+function updateTime() {
+	if (timeRemaining == 0) {
+		// implement game over
+		return;
+	}
+	timeRemaining = Math.floor(120 - clock.getElapsedTime());
+	document.getElementById("time").innerHTML = "Time remaining: " + parseInt(timeRemaining);
+}
 
+function updateSize() {
+	document.getElementById("size").innerHTML = "Size: " + parseInt(size);
+}
 
 // KEYBOARD CONTROL
 var keyboard = new THREEx.KeyboardState();
@@ -189,7 +222,8 @@ function keyEvent(event) {
     }
     // freeze behaviour (convenient for debugging)
     else if(keyboard.eventMatches(event, "space")) {
-        freeze = !freeze;
+        document.getElementById("difficulty").innerHTML = difficulty;
+		freeze = !freeze;
     }
     
     // ARROW KEYS
@@ -209,8 +243,17 @@ function keyEvent(event) {
         var rotationMatrix = new THREE.Matrix4().makeRotationX(gameCtrl.rotationSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
-    
-    
+	
+	// toggle difficulty
+	else if(keyboard.eventMatches(event, "t")) {
+		if (difficulty == 3) {
+			difficulty = 1;
+		}	
+		else {
+			difficulty = difficulty + 1
+			};
+		updateDifficulty();
+    }   
 };
 
 // MOUSE CONTROL

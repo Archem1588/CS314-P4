@@ -3,11 +3,39 @@
     <meta charset="UTF-8">
     <title>CPSC 314 Project 4</title>
     <style>
+		#difficulty {
+		background-color: #EEEEEE;
+		position: absolute;
+		z-index:100;
+		}
+		#time {
+		background-color: #EEEEEE;
+		position: fixed;
+		top: 18;
+		z-index:100;
+		}
+		#size {
+		background-color: #EEEEEE;
+		position: fixed;
+		top: 36;
+		z-index:100;
+		}
+		#goal {
+		background-color: #EEEEEE;
+		position: fixed;
+		top: 54;
+		z-index:100;
+		}
       body { margin: 0; } canvas { width: 100%;
       height: 100% }
     </style>
   </head>
   <body>
+  <div id='difficulty'>Difficulty: normal</div>
+  <div id='time'>Time remaining:</div>
+  <div id='size'>Current size:</div>
+  <div id='goal'>Goal:</div> 
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="js/three.js"></script>
     <script src="js/KeyboardState.js"></script>
     
