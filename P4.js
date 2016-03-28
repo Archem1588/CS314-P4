@@ -64,6 +64,7 @@ var envirn = {
 
 // Game Controls
 var gameCtrl = {
+    speed: 0.5,
     rotationSpeed: Math.PI/32,
 };
 
@@ -83,8 +84,10 @@ var pSphere = {
 
 var sSphere = {
     mesh: [],
-    initialAmount: 30,
+    initialAmount: 10,
     radius: {min: 1, max: 3},
+    poss: [],
+    rads: [],
 };
 
 var mSphere = {
@@ -103,6 +106,7 @@ var kSphere = {
 geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
     map: new THREE.TextureLoader().load(pSphere.texture),
+    transparent: true, opacity: 0.5,
 });
 pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
@@ -115,6 +119,7 @@ material = new THREE.MeshNormalMaterial();
 for (var i = 0; i < sSphere.initialAmount; i++) {
     // create spheres
     var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
+    sSphere.rads[i] = rad;
     geometry = new THREE.SphereGeometry(rad, 32, 32);
     sSphere.mesh[i] = new THREE.Mesh(geometry, material);
     
@@ -122,6 +127,7 @@ for (var i = 0; i < sSphere.initialAmount; i++) {
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
+    sSphere.poss[i] = new THREE.Vector3(posX, posY, posZ);
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     sSphere.mesh[i].applyMatrix(translationMatrix);
     
@@ -130,22 +136,14 @@ for (var i = 0; i < sSphere.initialAmount; i++) {
 }
 
 
-
-
-
 // UPDATE FUNCTION
 function updateWorld() {
     if (!freeze){
     
-    
-    var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0.3);
+    // MOVE FORWARD
+    var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, gameCtrl.speed);
     pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
     pSphere.mesh.setMatrix(pSphere.mat);
-    
-    
-    
-    
-    
     
     // MOUSE EVENTS
     if (mouseDown) {
@@ -157,7 +155,14 @@ function updateWorld() {
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     
+    // COLLISION DETECTION
     
+    // identify current position of pSphere
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(pSphere.mat);
+    pos = new THREE.Vector3(pos.x, pos.y, pos.z);
+    
+    // detect collision
     
     
     
