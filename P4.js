@@ -222,7 +222,6 @@ function keyEvent(event) {
     }
     // freeze behaviour (convenient for debugging)
     else if(keyboard.eventMatches(event, "space")) {
-        document.getElementById("difficulty").innerHTML = difficulty;
 		freeze = !freeze;
     }
     
