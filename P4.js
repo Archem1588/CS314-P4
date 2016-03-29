@@ -20,6 +20,41 @@ var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, -100);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+// Lighting and materials
+
+var lightColor = new THREE.Color(1, 1, 1);
+var ambientColor = new THREE.Color(0.4, 0.4, 0.4);
+var lightPosition = new THREE.Vector3(20, 60, 20);
+
+var kAmbient = new THREE.Color(0.4,0.2,0.4);
+var kDiffuse = new THREE.Color(0.8,0.1,0.8);
+var kSpecular = new THREE.Color(0.8,0.5,0.8);
+
+var shininess = 10.0;
+
+var phongMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        lightColor: {type: 'c', value: lightColor},
+        ambientColor: {type: 'c', value: ambientColor},
+        lightPosition: {type: 'v3', value: lightPosition},
+        kAmbient: {type: 'c', value: kAmbient},
+        kDiffuse: {type: 'c', value: kDiffuse},
+        kSpecular: {type: 'c', value:kSpecular},
+        shininess: {type: 'f', value:shininess},
+    },
+});
+
+var shaderFiles = [
+    'glsl/phong.vs.glsl',
+    'glsl/phong.fs.glsl'
+];
+
+new THREE.SourceLoader().load(shaderFiles, function (shaders) {
+    phongMaterial.vertexShader = shaders['glsl/phong.vs.glsl'];
+    phongMaterial.fragmentShader = shaders['glsl/phong.fs.glsl'];
+    phongMaterial.needsUpdate = true;
+});
+
 // ADAPT TO WINDOW RESIZE
 function resize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -128,7 +163,7 @@ for (var i = 0; i < sSphere.initialAmount; i++) {
     var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
     sSphere.rads[i] = rad;
     geometry = new THREE.SphereGeometry(rad, 32, 32);
-    sSphere.mesh[i] = new THREE.Mesh(geometry, material);
+    sSphere.mesh[i] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
     
     // translate to random location in environment
     var posX = getRandom(-envirn.size, envirn.size);
@@ -141,6 +176,16 @@ for (var i = 0; i < sSphere.initialAmount; i++) {
     // add to scene
     scene.add(sSphere.mesh[i]);
 }
+
+//sun
+geometry = new THREE.SphereGeometry(5, 32, 32);
+geometry.translate(20, 60, 20);
+material = new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('./sun.jpg')
+    }
+);
+var sun = new THREE.Mesh(geometry, material);
+scene.add(sun);
 
 
 // UPDATE FUNCTION
