@@ -125,11 +125,12 @@ var pSphere = {
 };
 
 var sSphere = {
-    mesh: [],
-    initialAmount: 10,
+    initAmount: 10,
     radius: {min: 1, max: 3},
-    poss: [],
-    rads: [],
+    sph: [],
+      // mesh
+      // pos
+      // rad
 };
 
 var mSphere = {
@@ -158,23 +159,34 @@ pSphere.mesh.add(camera);
 
 // sSphere
 material = new THREE.MeshNormalMaterial();
-for (var i = 0; i < sSphere.initialAmount; i++) {
-    // create spheres
-    var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
-    sSphere.rads[i] = rad;
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
-    sSphere.mesh[i] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
+function generateSSphere() {
+    // create sphere object
+    var newSphere = {};
     
-    // translate to random location in environment
+    // set radius
+    var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
+    newSphere["rad"] = rad;
+    
+    // create mesh
+    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    
+    // set location (translate to random location)
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    sSphere.poss[i] = new THREE.Vector3(posX, posY, posZ);
+    newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
-    sSphere.mesh[i].applyMatrix(translationMatrix);
+    newSphere.mesh.applyMatrix(translationMatrix);
     
     // add to scene
-    scene.add(sSphere.mesh[i]);
+    scene.add(newSphere.mesh);
+    
+    return newSphere;
+}
+
+for (var i = 0; i < sSphere.initAmount; i++) {
+    sSphere.sph.push(generateSSphere());
 }
 
 //sun
@@ -216,8 +228,26 @@ function updateWorld() {
     pos.applyMatrix4(pSphere.mat);
     pos = new THREE.Vector3(pos.x, pos.y, pos.z);
     
-    // detect collision
+    // collision detection
+    for (var i = 0; i < sSphere.sph.length; i++) {
+        // calculate distance between pSphere and sSphere
+        var dx = Math.abs(pos.x - sSphere.sph[i].pos.x);
+        var dy = Math.abs(pos.y - sSphere.sph[i].pos.y);
+        var dz = Math.abs(pos.z - sSphere.sph[i].pos.z);
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        
+        // calculate distance minus radiuses
+        dist = dist - pSphere.radius - sSphere.sph[i].rad;
+        
+        // if dist <= 0, collided
+        if (dist <= 0) {
+            console.log("Gulp! " + i);
+            scene.remove(sSphere.sph[i].mesh);
+            sSphere.sph.splice(i, 1);
+            sSphere.sph.push(generateSSphere());
+        }
     
+    }
     
     
     
