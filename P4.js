@@ -108,6 +108,7 @@ var envirn = {
 var gameCtrl = {
     speed: 0.5,
     rotationSpeed: Math.PI/32,
+    sizeIncrRate: 0.2,
 };
 
 // Types of spheres:
@@ -134,6 +135,7 @@ var sSphere = {
 };
 
 var mSphere = {
+    initAmount: 5,
     radius: {min: 5, max: 10},
 };
 
@@ -169,6 +171,7 @@ function generateSSphere() {
     
     // create mesh
     newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
+    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
     geometry = new THREE.SphereGeometry(rad, 32, 32);
     
     // set location (translate to random location)
@@ -191,12 +194,13 @@ for (var i = 0; i < sSphere.initAmount; i++) {
 
 //sun
 geometry = new THREE.SphereGeometry(5, 32, 32);
-geometry.translate(20, 60, 20);
 material = new THREE.MeshBasicMaterial({
         map: new THREE.TextureLoader().load('./sun.jpg')
     }
 );
 var sun = new THREE.Mesh(geometry, material);
+var translationMatrix = new THREE.Matrix4().makeTranslation(20, 60, 20);
+sun.applyMatrix(translationMatrix);
 scene.add(sun);
 
 
@@ -236,14 +240,19 @@ function updateWorld() {
         var dz = Math.abs(pos.z - sSphere.sph[i].pos.z);
         var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         
-        // calculate distance minus radiuses
-        dist = dist - pSphere.radius - sSphere.sph[i].rad;
+        // calculate distance minus radii
+        dist = dist + sSphere.sph[i].rad - pSphere.radius; // completely inside pSphere
+        //dist = dist - sSphere.sph[i].rad - pSphere.radius; // actual collision
         
         // if dist <= 0, collided
         if (dist <= 0) {
             console.log("Gulp! " + i);
+            pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * sSphere.sph[i].rad);
+            var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
+            pSphere.mesh.geometry = geometry;
             scene.remove(sSphere.sph[i].mesh);
             sSphere.sph.splice(i, 1);
+            i--;
             sSphere.sph.push(generateSSphere());
         }
     
