@@ -320,10 +320,24 @@ document.addEventListener('mousemove', function(event) {
 
 // SETUP UPDATE CALL-BACK
 function update() {
+	stats.begin();
     updateWorld();
-    
+    stats.end();
     requestAnimationFrame(update);
-    renderer.render(scene,camera);
+    renderer.render(scene,camera)
 }
 
 update();
+
+// fps display
+var stats = new Stats();
+stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
+
+// align left
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.left = '0px';
+stats.domElement.style.top = '90px';
+
+document.body.appendChild( stats.domElement );
+
+
