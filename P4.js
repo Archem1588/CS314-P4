@@ -2,12 +2,6 @@
 var scene = new THREE.Scene();
 var clock = new THREE.Clock(true);
 
-var difficulty = 1; // 1 = normal, 2 = hard, 3 = easy
-var timeRemaining = 120;
-var size = 5;
-var goal = 30;
-document.getElementById("goal").innerHTML = "Goal: " + parseInt(goal);
-
 // SETUP RENDERER
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -92,8 +86,6 @@ function getRandom(min, max) {
 };
 
 
-
-
 // VARIABLES
 // General variables:
 var geometry;
@@ -110,6 +102,15 @@ var gameCtrl = {
     rotationSpeed: Math.PI/32,
     sizeIncrRate: 0.2,
 };
+
+// Display Board
+var display = {
+    difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
+    timeRemaining: 120,
+    goal: 30,
+    timeLimit: 120,
+};
+
 
 // Types of spheres:
 //   - player sphere      (pSphere)
@@ -143,8 +144,11 @@ var kSphere = {
     radius: {min: 1, max: 10},
 };
 
-
-
+// Set Up Display Board
+updateDifficulty();
+document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
+updateSize();
+document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
 
 // CREATING OBJECTS
 // pSphere
@@ -206,9 +210,9 @@ scene.add(sun);
 
 // UPDATE FUNCTION
 function updateWorld() {
-	updateTime();
-	updateSize();
+    
     if (!freeze){
+    updateTime();
     
     // MOVE FORWARD
     var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, gameCtrl.speed);
@@ -241,15 +245,16 @@ function updateWorld() {
         var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         
         // calculate distance minus radii
-        dist = dist + sSphere.sph[i].rad - pSphere.radius; // completely inside pSphere
-        //dist = dist - sSphere.sph[i].rad - pSphere.radius; // actual collision
+        //dist = dist + sSphere.sph[i].rad - pSphere.radius; // (almost) completely inside pSphere
+        dist = dist - sSphere.sph[i].rad - pSphere.radius; // actual collision
         
-        // if dist <= 0, collided
+        // collided if dist less than 0
         if (dist <= 0) {
             console.log("Gulp! " + i);
             pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * sSphere.sph[i].rad);
             var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
             pSphere.mesh.geometry = geometry;
+            updateSize();
             scene.remove(sSphere.sph[i].mesh);
             sSphere.sph.splice(i, 1);
             i--;
@@ -268,29 +273,29 @@ function updateWorld() {
 
 function updateDifficulty() {
 	var text = "";
-	if (difficulty == 1) {
+	if (display.difficulty == 1) {
 		text = "Difficulty: normal";
 	}
-	if (difficulty == 2) {
+	if (display.difficulty == 2) {
 		text = "Difficulty: hard";
 	}
-	if (difficulty == 3) {
+	if (display.difficulty == 3) {
 		text = "Difficulty: easy";
 	}
 	document.getElementById("difficulty").innerHTML = text;
 }
 
 function updateTime() {
-	if (timeRemaining == 0) {
+	if (display.timeRemaining == 0) {
 		// implement game over
 		return;
 	}
-	timeRemaining = Math.floor(120 - clock.getElapsedTime());
-	document.getElementById("time").innerHTML = "Time remaining: " + parseInt(timeRemaining);
+	display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
+	document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
 }
 
 function updateSize() {
-	document.getElementById("size").innerHTML = "Size: " + parseInt(size);
+	document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
 }
 
 // KEYBOARD CONTROL
