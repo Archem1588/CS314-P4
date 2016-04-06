@@ -2,12 +2,6 @@
 var scene = new THREE.Scene();
 var clock = new THREE.Clock(true);
 
-var difficulty = 1; // 1 = normal, 2 = hard, 3 = easy
-var timeRemaining = 120;
-var size = 5;
-var goal = 30;
-document.getElementById("goal").innerHTML = "Goal: " + parseInt(goal);
-
 // SETUP RENDERER
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -92,8 +86,6 @@ function getRandom(min, max) {
 };
 
 
-
-
 // VARIABLES
 // General variables:
 var geometry;
@@ -108,7 +100,17 @@ var envirn = {
 var gameCtrl = {
     speed: 0.5,
     rotationSpeed: Math.PI/32,
+    sizeIncrRate: 0.2,
 };
+
+// Display Board
+var display = {
+    difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
+    timeRemaining: 120,
+    goal: 30,
+    timeLimit: 120,
+};
+
 
 // Types of spheres:
 //   - player sphere      (pSphere)
@@ -125,14 +127,16 @@ var pSphere = {
 };
 
 var sSphere = {
-    mesh: [],
-    initialAmount: 10,
+    initAmount: 10,
     radius: {min: 1, max: 3},
-    poss: [],
-    rads: [],
+    sph: [],
+      // mesh
+      // pos
+      // rad
 };
 
 var mSphere = {
+    initAmount: 5,
     radius: {min: 5, max: 10},
 };
 
@@ -140,8 +144,11 @@ var kSphere = {
     radius: {min: 1, max: 10},
 };
 
-
-
+// Set Up Display Board
+updateDifficulty();
+document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
+updateSize();
+document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
 
 // CREATING OBJECTS
 // pSphere
@@ -158,41 +165,54 @@ pSphere.mesh.add(camera);
 
 // sSphere
 material = new THREE.MeshNormalMaterial();
-for (var i = 0; i < sSphere.initialAmount; i++) {
-    // create spheres
-    var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
-    sSphere.rads[i] = rad;
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
-    sSphere.mesh[i] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
+function generateSSphere() {
+    // create sphere object
+    var newSphere = {};
     
-    // translate to random location in environment
+    // set radius
+    var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
+    newSphere["rad"] = rad;
+    
+    // create mesh
+    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
+    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    
+    // set location (translate to random location)
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    sSphere.poss[i] = new THREE.Vector3(posX, posY, posZ);
+    newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
-    sSphere.mesh[i].applyMatrix(translationMatrix);
+    newSphere.mesh.applyMatrix(translationMatrix);
     
     // add to scene
-    scene.add(sSphere.mesh[i]);
+    scene.add(newSphere.mesh);
+    
+    return newSphere;
+}
+
+for (var i = 0; i < sSphere.initAmount; i++) {
+    sSphere.sph.push(generateSSphere());
 }
 
 //sun
 geometry = new THREE.SphereGeometry(5, 32, 32);
-geometry.translate(20, 60, 20);
 material = new THREE.MeshBasicMaterial({
         map: new THREE.TextureLoader().load('./sun.jpg')
     }
 );
 var sun = new THREE.Mesh(geometry, material);
+var translationMatrix = new THREE.Matrix4().makeTranslation(20, 60, 20);
+sun.applyMatrix(translationMatrix);
 scene.add(sun);
 
 
 // UPDATE FUNCTION
 function updateWorld() {
-	updateTime();
-	updateSize();
+    
     if (!freeze){
+    updateTime();
     
     // MOVE FORWARD
     var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, gameCtrl.speed);
@@ -216,8 +236,32 @@ function updateWorld() {
     pos.applyMatrix4(pSphere.mat);
     pos = new THREE.Vector3(pos.x, pos.y, pos.z);
     
-    // detect collision
+    // collision detection
+    for (var i = 0; i < sSphere.sph.length; i++) {
+        // calculate distance between pSphere and sSphere
+        var dx = Math.abs(pos.x - sSphere.sph[i].pos.x);
+        var dy = Math.abs(pos.y - sSphere.sph[i].pos.y);
+        var dz = Math.abs(pos.z - sSphere.sph[i].pos.z);
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        
+        // calculate distance minus radii
+        //dist = dist + sSphere.sph[i].rad - pSphere.radius; // (almost) completely inside pSphere
+        dist = dist - sSphere.sph[i].rad - pSphere.radius; // actual collision
+        
+        // collided if dist less than 0
+        if (dist <= 0) {
+            console.log("Gulp! " + i);
+            pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * sSphere.sph[i].rad);
+            var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
+            pSphere.mesh.geometry = geometry;
+            updateSize();
+            scene.remove(sSphere.sph[i].mesh);
+            sSphere.sph.splice(i, 1);
+            i--;
+            sSphere.sph.push(generateSSphere());
+        }
     
+    }
     
     
     
@@ -229,29 +273,29 @@ function updateWorld() {
 
 function updateDifficulty() {
 	var text = "";
-	if (difficulty == 1) {
+	if (display.difficulty == 1) {
 		text = "Difficulty: normal";
 	}
-	if (difficulty == 2) {
+	if (display.difficulty == 2) {
 		text = "Difficulty: hard";
 	}
-	if (difficulty == 3) {
+	if (display.difficulty == 3) {
 		text = "Difficulty: easy";
 	}
 	document.getElementById("difficulty").innerHTML = text;
 }
 
 function updateTime() {
-	if (timeRemaining == 0) {
+	if (display.timeRemaining == 0) {
 		// implement game over
 		return;
 	}
-	timeRemaining = Math.floor(120 - clock.getElapsedTime());
-	document.getElementById("time").innerHTML = "Time remaining: " + parseInt(timeRemaining);
+	display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
+	document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
 }
 
 function updateSize() {
-	document.getElementById("size").innerHTML = "Size: " + parseInt(size);
+	document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
 }
 
 // KEYBOARD CONTROL
