@@ -1,73 +1,102 @@
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>CPSC 314 Project 4</title>
     <style>
-		#difficulty {
-		background-color: #EEEEEE;
-		position: absolute;
-		z-index:100;
-		}
-		#time {
-		background-color: #EEEEEE;
-		position: fixed;
-		top: 18;
-		z-index:100;
-		}
-		#size {
-		background-color: #EEEEEE;
-		position: fixed;
-		top: 36;
-		z-index:100;
-		}
-		#goal {
-		background-color: #EEEEEE;
-		position: fixed;
-		top: 54;
-		z-index:100;
-		}
-        #selected {
-        background-color: #EEEEEE;
-        position: fixed;
-        top: 72;
-        z-index:100;
+        #difficulty {
+            background-color: #EEEEEE;
+            position: absolute;
+            z-index: 100;
         }
-		#container {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
-		z-index: 0;
-		}
-      body { margin: 0; } canvas { width: 100%;
-      height: 100% }
+
+        #time {
+            background-color: #EEEEEE;
+            position: fixed;
+            top: 18;
+            z-index: 100;
+        }
+
+        #size {
+            background-color: #EEEEEE;
+            position: fixed;
+            top: 36;
+            z-index: 100;
+        }
+
+        #goal {
+            background-color: #EEEEEE;
+            position: fixed;
+            top: 54;
+            z-index: 100;
+        }
+
+        #selected {
+            background-color: #EEEEEE;
+            position: fixed;
+            top: 72;
+            z-index: 100;
+        }
+
+        #container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 0;
+        }
+
+        #endGame {
+            width: 50%;
+            height: 50%;
+            position: absolute;
+            top: 25%;
+            left: 25%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size : 50px;
+            font-weight: bold;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+
+
     </style>
-  </head>
-  <body>
-  <div id='difficulty'></div>
-  <div id='time'></div>
-  <div id='size'></div>
-  <div id='goal'></div>
-  <div id='selected'></div>
-  <div id='container'></div>
-    <script src="js/three.js"></script>
-    <script src="js/KeyboardState.js"></script>
-	<script src="js/SourceLoader.js"></script>
-	<script src="js/stats.js"></script>
-    
-    <!-- 
-    <script src="js/material.js"></script>
-    <script src="js/OrbitControls.js"></script>
-    <script src="js/SourceLoader.js"></script>
-    <script src="js/XHRLoader.js"></script>
-    <script src="js/DDSLoader.js"></script>
-    <script src="js/MTLLoader.js"></script>
-    <script src="js/OBJLoader.js"></script>
-     -->
-    
-    <script src="P4.js"></script>
-	
+</head>
+<body>
+<div id='difficulty'></div>
+<div id='time'></div>
+<div id='size'></div>
+<div id='goal'></div>
+<div id='selected'></div>
+<div id='endGame'></div>
+<div id='container'></div>
+<script src="js/three.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/SourceLoader.js"></script>
+<script src="js/stats.js"></script>
+
+<!--
+<script src="js/material.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/SourceLoader.js"></script>
+<script src="js/XHRLoader.js"></script>
+<script src="js/DDSLoader.js"></script>
+<script src="js/MTLLoader.js"></script>
+<script src="js/OBJLoader.js"></script>
+ -->
+
+<script src="P4.js"></script>
+
 </body>
 </html>
 

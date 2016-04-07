@@ -1,13 +1,17 @@
 var scene = new THREE.Scene();
 var clock = new THREE.Clock(true);
 
+
+// PARTICLE CREATION
+
+
 var particleSystem = new THREE.Points();
 var dirs = [];
 
 function createParticleSystem(x, y, z, r) {
 
     // The number of particles in a particle system is not easily changed.
-    var particleCount = 30;
+    var particleCount = 100;
 
     // Particles are just individual vertices in a geometry
     // Create the geometry that will hold all of the vertices
@@ -36,11 +40,11 @@ function createParticleSystem(x, y, z, r) {
 // Create the material that will be used to render each vertex of the geometry
     var particleMaterial = new THREE.PointsMaterial(
         {
-            color: 0xffffff,
+            color: 0x000000,
             size: 4,
-            map: THREE.ImageUtils.loadTexture("particle.jpg"),
-            blending: THREE.AdditiveBlending,
-            //alphaTest: 0.5
+            //map: THREE.ImageUtils.loadTexture("particle.jpg"),
+            //blending: THREE.AdditiveBlending,
+            //transparent: true
         });
 
 // Create the particle system
@@ -48,6 +52,27 @@ function createParticleSystem(x, y, z, r) {
 
     return particleSystem;
 }
+
+// PARTICLE ANIMATION
+function animateParticles() {
+    var deltaTime = clock.getDelta();
+    var verts = particleSystem.geometry.vertices;
+    for (var i = 0; i < verts.length; i++) {
+        var vert = verts[i];
+        vert.x += dirs[i].x;
+        vert.y += dirs[i].y;
+        vert.z += dirs[i].z;
+        //vert.x = vert.x - (10 * deltaTime);
+        //vert.y = vert.y - (10 * deltaTime);
+        //vert.z = vert.z - (10 * deltaTime);
+    }
+    particleSystem.geometry.verticesNeedUpdate = true;
+    particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
+    particleSystem.rotation.y -= .1 * Math.random() * deltaTime
+    particleSystem.rotation.z -= .1 * Math.random() * deltaTime;
+
+}
+
 // SETUP RENDERER
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -176,7 +201,7 @@ var display = {
 var pSphere = {
     mesh: null,
     mat: null,
-    pos: null,
+    pos: new THREE.Vector3(0, 0, 0),
     // properties
     radius: 5,
     texture: './earthmap.jpg',
@@ -216,6 +241,7 @@ document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
 
 
 // CREATING OBJECTS
+
 // pSphere
 geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
@@ -444,8 +470,6 @@ function detectCollision(collideSphere, i, generateFunc) {
         pSphere.mesh.geometry = geometry;
         updateSize();
         scene.remove(collideSphere[i].mesh);
-        particleSystem = createParticleSystem(sSphere.sph[i].pos.x, sSphere.sph[i].pos.y, sSphere.sph[i].pos.z, sSphere.sph[i].rad);
-        scene.add(particleSystem);
         collideSphere.splice(i, 1);
         i--;
         collideSphere.push(generateFunc());
@@ -467,9 +491,18 @@ function updateDifficulty() {
     document.getElementById("difficulty").innerHTML = text;
 }
 
+function gameEndScenario(s) {
+    scene.remove(pSphere.mesh);
+    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+    scene.add(particleSystem);
+    freeze = true;
+    document.getElementById("endGame").innerHTML = s;
+}
+
 function updateTime() {
-    if (display.timeRemaining == 0) {
-        // implement game over
+    //Game Over
+    if (display.timeRemaining == 100) {
+        gameEndScenario("Game Over!" + "<br />" + "Press Space to Restart");
         return;
     }
     display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
@@ -556,8 +589,8 @@ stats.setMode(0); // 0: fps, 1: ms, 2: mb
 
 // align left
 stats.domElement.style.position = 'absolute';
-stats.domElement.style.left = '0px';
-stats.domElement.style.top = '90px';
+stats.domElement.style.right = '0px';
+stats.domElement.style.top = '0px';
 
 document.body.appendChild(stats.domElement);
 
@@ -572,27 +605,6 @@ function update() {
     renderer.render(scene, camera)
 }
 
-function animateParticles() {
-    var deltaTime = clock.getDelta();
-    var verts = particleSystem.geometry.vertices;
-    for (var i = 0; i < verts.length; i++) {
-        var vert = verts[i];
-        vert.x += dirs[i].x;
-        vert.y += dirs[i].y;
-        vert.z += dirs[i].z;
-        //vert.x = vert.x - (10 * deltaTime);
-        //vert.y = vert.y - (10 * deltaTime);
-        //vert.z = vert.z - (10 * deltaTime);
-    }
-    particleSystem.geometry.verticesNeedUpdate = true;
-    particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
-    particleSystem.rotation.y -= .1 * Math.random() * deltaTime
-    particleSystem.rotation.z -= .1 * Math.random() * deltaTime;
-
-    if (deltaTime == 1){
-    }
-
-}
 update();
 
 
