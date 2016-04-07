@@ -359,6 +359,12 @@ function keyEvent(event) {
     // freeze behaviour (convenient for debugging)
     else if(keyboard.eventMatches(event, "space")) {
 		freeze = !freeze;
+        if (freeze) {
+            clock.stop();
+        }
+        if (!freeze) {
+            clock.start;
+        }
     }
     
     // ARROW KEYS
