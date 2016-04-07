@@ -491,17 +491,19 @@ function updateDifficulty() {
     document.getElementById("difficulty").innerHTML = text;
 }
 
+var isGameOver = false;
+
 function gameEndScenario(s) {
     scene.remove(pSphere.mesh);
     particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
     scene.add(particleSystem);
-    freeze = true;
+    isGameOver = true;
     document.getElementById("endGame").innerHTML = s;
 }
 
 function updateTime() {
     //Game Over
-    if (display.timeRemaining == 100) {
+    if (display.timeRemaining == 110) {
         gameEndScenario("Game Over!" + "<br />" + "Press Space to Restart");
         return;
     }
@@ -526,12 +528,17 @@ function keyEvent(event) {
     }
     // freeze behaviour (convenient for debugging)
     else if (keyboard.eventMatches(event, "space")) {
-        freeze = !freeze;
-        if (freeze) {
-            clock.stop();
+        if (!isGameOver) {
+            freeze = !freeze;
+            if (freeze) {
+                clock.stop();
+            }
+            if (!freeze) {
+                clock.start;
+            }
         }
-        if (!freeze) {
-            clock.start;
+        else {
+            location.reload();
         }
     }
 

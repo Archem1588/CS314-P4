@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dcbab312-4608-4ded-803b-03e862aac6fe" name="Default" comment="">
-      <change type="DELETED" beforePath="D:\CS\CPSC 314\cpsc-314-p4-game\.idea\.name" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.html" afterPath="$PROJECT_DIR$/P4.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.js" afterPath="$PROJECT_DIR$/P4.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="cpsc-314-p4-game.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -30,9 +27,10 @@
       <file leaf-file-name="P4.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P4.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.49881518">
-              <caret line="46" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
+            <state vertical-scroll-proportion="0.44549763">
+              <caret line="505" column="35" selection-start-line="505" selection-start-column="35" selection-end-line="505" selection-end-column="35" />
               <folding>
+                <element signature="n#!!block;n#createParticleSystem#0" expanded="false" />
                 <element signature="n#!!block;n#animateParticles#0" expanded="false" />
               </folding>
             </state>
@@ -42,7 +40,7 @@
       <file leaf-file-name="P4.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/P4.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.229885">
+            <state vertical-scroll-proportion="-3.2643678">
               <caret line="80" column="16" selection-start-line="80" selection-start-column="16" selection-end-line="80" selection-end-column="16" />
               <folding />
             </state>
@@ -388,7 +386,7 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/P4.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.229885">
+        <state vertical-scroll-proportion="-3.2643678">
           <caret line="80" column="16" selection-start-line="80" selection-start-column="16" selection-end-line="80" selection-end-column="16" />
           <folding />
         </state>
@@ -396,9 +394,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/P4.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.49881518">
-          <caret line="46" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.44549763">
+          <caret line="505" column="35" selection-start-line="505" selection-start-column="35" selection-end-line="505" selection-end-column="35" />
           <folding>
+            <element signature="n#!!block;n#createParticleSystem#0" expanded="false" />
             <element signature="n#!!block;n#animateParticles#0" expanded="false" />
           </folding>
         </state>
