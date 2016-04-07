@@ -208,6 +208,53 @@ sun.applyMatrix(translationMatrix);
 scene.add(sun);
 
 
+// Picking
+var container = document.getElementById('container');
+
+var containerWidth = container.clientWidth;
+var containerHeight = container.clientHeight;
+
+raycaster = new THREE.Raycaster();
+mouseVector = new THREE.Vector2();
+window.addEventListener('mousemove', onMouseMove, false);
+
+function onMouseMove(e) {
+    mouseVector.x = 2 * (e.clientX / containerWidth) - 1;
+    mouseVector.y = 1 - 2 * (e.clientY / containerHeight);
+    raycaster.setFromCamera(mouseVector, camera);
+    var intersects = raycaster.intersectObjects(scene.children);
+
+    if (intersects.length == 0) {
+        document.getElementById("selected").innerHTML = "No Object Selected!";
+        return;
+    }
+
+    for( var i = 0; i < intersects.length; i++ ) {
+        var intersection = intersects[i],
+        obj = intersection.object;
+        var vertices = obj.geometry.vertices;
+        var radius, closestYIndex, farthestYIndex, first = true;
+
+        for (var j = 0; j < vertices.length; j++) {
+            if (first) {
+                first = false;
+                closestYIndex = j;
+                farthestYIndex = j;
+            }
+            else {
+                if (vertices[j].y < vertices[closestYIndex].y) {
+                    closestYIndex = j;
+                }
+                if (vertices[j].y > vertices[farthestYIndex].y) {
+                    farthestYIndex = j;
+                }
+                radius = (vertices[farthestYIndex].y - vertices[closestYIndex].y)/2;
+            }
+        }
+        document.getElementById("selected").innerHTML = "Selected Object Size: " + parseInt(radius);
+    }
+};
+
 // UPDATE FUNCTION
 function updateWorld() {
     
@@ -359,7 +406,16 @@ document.addEventListener('mousemove', function(event) {
 });
 
 
+// fps display
+var stats = new Stats();
+stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
 
+// align left
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.left = '0px';
+stats.domElement.style.top = '90px';
+
+document.body.appendChild( stats.domElement );
 
 
 // SETUP UPDATE CALL-BACK
@@ -372,16 +428,5 @@ function update() {
 }
 
 update();
-
-// fps display
-var stats = new Stats();
-stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
-
-// align left
-stats.domElement.style.position = 'absolute';
-stats.domElement.style.left = '0px';
-stats.domElement.style.top = '90px';
-
-document.body.appendChild( stats.domElement );
 
 
