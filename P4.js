@@ -42,9 +42,9 @@ function createParticleSystem(x, y, z, r) {
         {
             color: 0x000000,
             size: 4,
-            //map: THREE.ImageUtils.loadTexture("particle.jpg"),
-            //blending: THREE.AdditiveBlending,
-            //transparent: true
+            map: THREE.ImageUtils.loadTexture("particle.jpg"),
+            blending: THREE.AdditiveBlending,
+            transparent: true
         });
 
 // Create the particle system
