@@ -12,7 +12,7 @@ document.body.appendChild(renderer.domElement);
 var aspect = window.innerWidth/window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, -100);
-//camera.position.set(150, 150, -150);
+//camera.position.set(150, 150, -150); // for debugging, delete after
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 // Lighting and materials
