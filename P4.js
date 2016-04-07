@@ -12,6 +12,7 @@ document.body.appendChild(renderer.domElement);
 var aspect = window.innerWidth/window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, -100);
+//camera.position.set(150, 150, -150);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 // Lighting and materials
@@ -84,6 +85,14 @@ THREE.Object3D.prototype.setMatrix = function(a) {
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+function getRandomAngle() {
+    return Math.random() * (2 * Math.PI);
+}
+function getRandomRotationMatrix() {
+    var rotationMatrixX = new THREE.Matrix4().makeRotationY(getRandomAngle());
+    var rotationMatrixY = new THREE.Matrix4().makeRotationX(getRandomAngle());
+    return new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
+}
 
 
 // VARIABLES
@@ -93,14 +102,14 @@ var material;
 
 // Environment
 var envirn = {
-    size: 100, // box
+    size: 40, // box
 };
 
 // Game Controls
 var gameCtrl = {
-    speed: 0.5,
+    speed: 2.0,
     rotationSpeed: Math.PI/32,
-    sizeIncrRate: 0.2,
+    sizeIncrRate: 0.4,
 };
 
 // Display Board
@@ -130,25 +139,34 @@ var sSphere = {
     initAmount: 10,
     radius: {min: 1, max: 3},
     sph: [],
+      // rad
       // mesh
       // pos
-      // rad
 };
 
 var mSphere = {
     initAmount: 5,
-    radius: {min: 5, max: 10},
+    radius: {min: 2, max: 10},
+    speed: 0.8,
+    rotChance: 0.01,
+    sph: [],
+      // rad
+      // mesh
+      // mat
+      // pos
 };
 
 var kSphere = {
     radius: {min: 1, max: 10},
 };
 
-// Set Up Display Board
+
+// DISPLAY BOARD set up
 updateDifficulty();
 document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
 updateSize();
 document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
+
 
 // CREATING OBJECTS
 // pSphere
@@ -164,7 +182,6 @@ scene.add(pSphere.mesh);
 pSphere.mesh.add(camera);
 
 // sSphere
-material = new THREE.MeshNormalMaterial();
 function generateSSphere() {
     // create sphere object
     var newSphere = {};
@@ -196,10 +213,51 @@ for (var i = 0; i < sSphere.initAmount; i++) {
     sSphere.sph.push(generateSSphere());
 }
 
+// mSphere
+material = new THREE.MeshNormalMaterial();
+function generateMSphere() {
+    // create sphere object
+    var newSphere = {};
+    
+    // set radius
+    var rad = getRandom(mSphere.radius.min, mSphere.radius.max);
+    newSphere["rad"] = rad;
+    
+    // create mesh
+    newSphere["mesh"] = new THREE.Mesh(geometry, material); // material can be used instead
+    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    
+    // set initial location and rotation (random)
+    var posX = getRandom(-envirn.size, envirn.size);
+    var posY = getRandom(-envirn.size, envirn.size);
+    var posZ = getRandom(-envirn.size, envirn.size);
+    newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
+    
+    var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
+    var rotationMatrix = getRandomRotationMatrix();
+    newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
+    
+    newSphere.mesh.setMatrix(newSphere.mat);
+    
+    // add to scene
+    scene.add(newSphere.mesh);
+    
+    return newSphere;
+}
+
+for (var i = 0; i < mSphere.initAmount; i++) {
+    mSphere.sph.push(generateMSphere());
+}
+
+
+
+
+
 //sun
 geometry = new THREE.SphereGeometry(5, 32, 32);
 material = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load('./sun.jpg')
+        map: new THREE.TextureLoader().load('./texture/sun.jpg')
     }
 );
 var sun = new THREE.Mesh(geometry, material);
@@ -262,9 +320,7 @@ function updateWorld() {
     updateTime();
     
     // MOVE FORWARD
-    var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, gameCtrl.speed);
-    pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
-    pSphere.mesh.setMatrix(pSphere.mat);
+    updatePSphere();
     
     // MOUSE EVENTS
     if (mouseDown) {
@@ -275,6 +331,12 @@ function updateWorld() {
         var rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
+    
+    // MOVING mSphere
+    for (var i = 0; i < mSphere.sph.length; i++) {
+        updateMSphere(mSphere.sph[i]);
+    }
+    
     
     // COLLISION DETECTION
     
@@ -317,6 +379,27 @@ function updateWorld() {
     
     }
 }
+
+function updatePSphere() {
+    var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 
+        ((1 / pSphere.radius) * gameCtrl.speed));
+    pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
+    pSphere.mesh.setMatrix(pSphere.mat);
+}
+
+function updateMSphere(curSphere) {
+    var randomNum = Math.random();
+    if (randomNum <= mSphere.rotChance) {
+        var rotationMatrix = getRandomRotationMatrix();
+        curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
+    } else {
+        var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 
+            ((1 / curSphere.rad) * mSphere.speed));
+        curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, translationMatrix);
+    }
+    curSphere.mesh.setMatrix(curSphere.mat);
+}
+
 
 function updateDifficulty() {
 	var text = "";
