@@ -130,6 +130,7 @@ var display = {
 var pSphere = {
     mesh: null,
     mat: null,
+    pos: null,
     // properties
     radius: 5,
     texture: './earthmap.jpg',
@@ -214,7 +215,6 @@ for (var i = 0; i < sSphere.initAmount; i++) {
 }
 
 // mSphere
-material = new THREE.MeshNormalMaterial();
 function generateMSphere() {
     // create sphere object
     var newSphere = {};
@@ -224,7 +224,7 @@ function generateMSphere() {
     newSphere["rad"] = rad;
     
     // create mesh
-    newSphere["mesh"] = new THREE.Mesh(geometry, material); // material can be used instead
+    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
     geometry = new THREE.SphereGeometry(rad, 32, 32);
     
@@ -319,7 +319,7 @@ function updateWorld() {
     if (!freeze){
     updateTime();
     
-    // MOVE FORWARD
+    // MOVE pSphere
     updatePSphere();
     
     // MOUSE EVENTS
@@ -332,46 +332,19 @@ function updateWorld() {
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     
-    // MOVING mSphere
+    // MOVE mSphere
     for (var i = 0; i < mSphere.sph.length; i++) {
         updateMSphere(mSphere.sph[i]);
     }
     
     
-    // COLLISION DETECTION
-    
-    // identify current position of pSphere
-    var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(pSphere.mat);
-    pos = new THREE.Vector3(pos.x, pos.y, pos.z);
-    
-    // collision detection
+    // DETECT COLLISION
     for (var i = 0; i < sSphere.sph.length; i++) {
-        // calculate distance between pSphere and sSphere
-        var dx = Math.abs(pos.x - sSphere.sph[i].pos.x);
-        var dy = Math.abs(pos.y - sSphere.sph[i].pos.y);
-        var dz = Math.abs(pos.z - sSphere.sph[i].pos.z);
-        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        
-        // calculate distance minus radii
-        //dist = dist + sSphere.sph[i].rad - pSphere.radius; // (almost) completely inside pSphere
-        dist = dist - sSphere.sph[i].rad - pSphere.radius; // actual collision
-        
-        // collided if dist less than 0
-        if (dist <= 0) {
-            console.log("Gulp! " + i);
-            pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * sSphere.sph[i].rad);
-            var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
-            pSphere.mesh.geometry = geometry;
-            updateSize();
-            scene.remove(sSphere.sph[i].mesh);
-            sSphere.sph.splice(i, 1);
-            i--;
-            sSphere.sph.push(generateSSphere());
-        }
-    
+        detectCollision(sSphere.sph, i, generateSSphere);
     }
-    
+    for (var i = 0; i < mSphere.sph.length; i++) {
+        detectCollision(mSphere.sph, i, generateMSphere);
+    }
     
     
     
@@ -384,6 +357,12 @@ function updatePSphere() {
     var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 
         ((1 / pSphere.radius) * gameCtrl.speed));
     pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
+    
+    // update current position of pSphere
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(pSphere.mat);
+    pSphere.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
+    
     pSphere.mesh.setMatrix(pSphere.mat);
 }
 
@@ -397,9 +376,40 @@ function updateMSphere(curSphere) {
             ((1 / curSphere.rad) * mSphere.speed));
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, translationMatrix);
     }
+    // update current position of curSphere
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(curSphere.mat);
+    curSphere.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
+    
     curSphere.mesh.setMatrix(curSphere.mat);
 }
 
+// COLLISION DETECTION
+function detectCollision(collideSphere, i, generateFunc) {
+    // calculate distance between pSphere and collideSphere
+    var dx = Math.abs(pSphere.pos.x - collideSphere[i].pos.x);
+    var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
+    var dz = Math.abs(pSphere.pos.z - collideSphere[i].pos.z);
+    var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    
+    // calculate distance minus radii
+    //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
+    dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
+    
+    // collided if dist less than 0
+    if (dist <= 0) {
+        console.log("Gulp! " + i);
+        pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * collideSphere[i].rad);
+        var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
+        pSphere.mesh.geometry = geometry;
+        updateSize();
+        scene.remove(collideSphere[i].mesh);
+        collideSphere.splice(i, 1);
+        i--;
+        collideSphere.push(generateFunc());
+    }
+    
+}
 
 function updateDifficulty() {
 	var text = "";
