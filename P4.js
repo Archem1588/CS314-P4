@@ -2,6 +2,7 @@ var scene = new THREE.Scene();
 var clock = new THREE.Clock(true);
 
 var particleSystem = new THREE.Points();
+var dirs = [];
 
 function createParticleSystem(x, y, z, r) {
 
@@ -24,9 +25,15 @@ function createParticleSystem(x, y, z, r) {
 
         // Add the vertex to the geometry
         particles.vertices.push(particle);
+        dirs.push({
+            x: (Math.random() * 5) - (5 / 2),
+            y: (Math.random() * 5) - (5 / 2),
+            z: (Math.random() * 5) - (5 / 2)
+        });
+
     }
 
-    // Create the material that will be used to render each vertex of the geometry
+// Create the material that will be used to render each vertex of the geometry
     var particleMaterial = new THREE.PointsMaterial(
         {
             color: 0xffffff,
@@ -36,7 +43,7 @@ function createParticleSystem(x, y, z, r) {
             //alphaTest: 0.5
         });
 
-    // Create the particle system
+// Create the particle system
     particleSystem = new THREE.Points(particles, particleMaterial);
 
     return particleSystem;
@@ -570,14 +577,20 @@ function animateParticles() {
     var verts = particleSystem.geometry.vertices;
     for (var i = 0; i < verts.length; i++) {
         var vert = verts[i];
-        vert.x = vert.x - (10 * deltaTime);
-        vert.y = vert.y - (10 * deltaTime);
-        vert.z = vert.z - (10 * deltaTime);
+        vert.x += dirs[i].x;
+        vert.y += dirs[i].y;
+        vert.z += dirs[i].z;
+        //vert.x = vert.x - (10 * deltaTime);
+        //vert.y = vert.y - (10 * deltaTime);
+        //vert.z = vert.z - (10 * deltaTime);
     }
     particleSystem.geometry.verticesNeedUpdate = true;
     particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
     particleSystem.rotation.y -= .1 * Math.random() * deltaTime
     particleSystem.rotation.z -= .1 * Math.random() * deltaTime;
+
+    if (deltaTime == 1){
+    }
 
 }
 update();
