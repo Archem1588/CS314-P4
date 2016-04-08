@@ -1,4 +1,3 @@
-
 // ======================== SYSTEM SETUP ========================
 
 var scene = new THREE.Scene();
@@ -86,9 +85,9 @@ var sSphere = {
     initAmount: 6,
     radius: {min: 2, max: 7},
     sph: [],
-      // rad
-      // mesh
-      // pos
+    // rad
+    // mesh
+    // pos
 };
 
 var mSphere = {
@@ -97,10 +96,10 @@ var mSphere = {
     speed: 0.8,
     rotChance: 0.01,
     sph: [],
-      // rad
-      // mesh
-      // mat
-      // pos
+    // rad
+    // mesh
+    // mat
+    // pos
 };
 
 var kSphere = {
@@ -110,10 +109,10 @@ var kSphere = {
     rotChance: 0.01,
     rotMatrixArray: [],
     sph: [],
-      // rad
-      // mesh
-      // mat
-      // pos
+    // rad
+    // mesh
+    // mat
+    // pos
 };
 
 var sun = {
@@ -192,13 +191,13 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
     // calculate distance minus radii
     //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
     dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
-    
+
     /* 
-    if (spiked) {
-        console.log("spiked: " + kSphere.sph[i].pos.x + " / player: " + pSphere.pos.x + " || spiked: " + kSphere.sph[i].pos.y + " / player: " + pSphere.pos.y + " || spiked: " + kSphere.sph[i].pos.z + " / player: " + pSphere.pos.z);
-    }
+     if (spiked) {
+     console.log("spiked: " + kSphere.sph[i].pos.x + " / player: " + pSphere.pos.x + " || spiked: " + kSphere.sph[i].pos.y + " / player: " + pSphere.pos.y + " || spiked: " + kSphere.sph[i].pos.z + " / player: " + pSphere.pos.z);
+     }
      */
-    
+
     // collided if dist less than 0
     if (dist <= 0) {
         if (!spiked) {
@@ -236,36 +235,38 @@ function eaten(collideSphere, i) {
 // PARTICLE SYSTEM ********************
 
 var particleSystem = new THREE.Points();
-var dirs = [];
+var particleDir = [];
 
 // Particle Creation
-function createParticleSystem(x, y, z, r) {
+function createParticles(x, y, z, r) {
     // The number of particles in a particle system is not easily changed
     var particleCount = 100;
-    
+
     // Particles are just individual vertices in a geometry
     // Create the geometry that will hold all of the vertices
     var particles = new THREE.Geometry();
-    
+
     // Create the vertices and add them to the particles geometry
     for (var p = 0; p < particleCount; p++) {
-        
+
         // Create the vertex
         var pX = x + Math.floor(Math.random() * (2 * r) - r);
         var pY = y + Math.floor(Math.random() * (2 * r) - r);
         var pZ = z + Math.floor(Math.random() * (2 * r) - r);
-        
+
         var particle = new THREE.Vector3(pX, pY, pZ);
-        
+
         // Add the vertex to the geometry
         particles.vertices.push(particle);
-        dirs.push({
+
+        // Set particle flying direction
+        particleDir.push({
             x: (Math.random() * 5) - (5 / 2),
             y: (Math.random() * 5) - (5 / 2),
             z: (Math.random() * 5) - (5 / 2)
         });
     }
-    
+
     // Create the material that will be used to render each vertex of the geometry
     var particleMaterial = new THREE.PointsMaterial(
         {
@@ -275,7 +276,7 @@ function createParticleSystem(x, y, z, r) {
             blending: THREE.AdditiveBlending,
             transparent: true
         });
-    
+
     // Create the particle system
     particleSystem = new THREE.Points(particles, particleMaterial);
     particleSystem.sortParticles = true;
@@ -286,15 +287,12 @@ function createParticleSystem(x, y, z, r) {
 // Particle Animation
 function animateParticles() {
     var deltaTime = clock.getDelta();
-    var verts = particleSystem.geometry.vertices;
-    for (var i = 0; i < verts.length; i++) {
-        var vert = verts[i];
-        vert.x += dirs[i].x;
-        vert.y += dirs[i].y;
-        vert.z += dirs[i].z;
-        //vert.x = vert.x - (10 * deltaTime);
-        //vert.y = vert.y - (10 * deltaTime);
-        //vert.z = vert.z - (10 * deltaTime);
+    var particles = particleSystem.geometry.vertices;
+    for (var i = 0; i < particles.length; i++) {
+        var particle = particles[i];
+        particle.x += particleDir[i].x;
+        particle.y += particleDir[i].y;
+        particle.z += particleDir[i].z;
     }
     particleSystem.geometry.verticesNeedUpdate = true;
     particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
@@ -439,16 +437,16 @@ function generateMSphere() {
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    
+
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
     newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
-    
+
     // store current position of newSphere
     var pos = new THREE.Vector4(0, 0, 0, 1);
     pos.applyMatrix4(newSphere.mat);
     newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
-    
+
     newSphere.mesh.setMatrix(newSphere.mat);
 
     // add to scene
@@ -466,51 +464,51 @@ for (var i = 0; i < mSphere.initAmount; i++) {
 
 // six basic surfaces
 kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(0));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI / 2));
 kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/2));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/2));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI / 2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 // half angles
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(3*Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-3*Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(3*Math.PI/4));
-kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-3*Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(3 * Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-3 * Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(3 * Math.PI / 4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-3 * Math.PI / 4));
 kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
-    new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
-    new THREE.Matrix4().makeRotationX(-Math.PI/4)));
+    new THREE.Matrix4().makeRotationZ(-Math.PI / 2),
+    new THREE.Matrix4().makeRotationX(-Math.PI / 4)));
 kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
-    new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
-    new THREE.Matrix4().makeRotationX(Math.PI/4)));
+    new THREE.Matrix4().makeRotationZ(-Math.PI / 2),
+    new THREE.Matrix4().makeRotationX(Math.PI / 4)));
 kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
-    new THREE.Matrix4().makeRotationZ(Math.PI/2), 
-    new THREE.Matrix4().makeRotationX(-Math.PI/4)));
+    new THREE.Matrix4().makeRotationZ(Math.PI / 2),
+    new THREE.Matrix4().makeRotationX(-Math.PI / 4)));
 kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
-    new THREE.Matrix4().makeRotationZ(Math.PI/2), 
-    new THREE.Matrix4().makeRotationX(Math.PI/4)));
+    new THREE.Matrix4().makeRotationZ(Math.PI / 2),
+    new THREE.Matrix4().makeRotationX(Math.PI / 4)));
 
 function generateKSphere() {
     // create sphere object
     var newSphere = {};
-    
+
     // set radius
     var rad = getRandom(kSphere.radius.min, kSphere.radius.max);
     newSphere["rad"] = rad;
-    
+
     // create mesh
-    geometry = new THREE.SphereGeometry(newSphere.rad/4, 32, 32);
+    geometry = new THREE.SphereGeometry(newSphere.rad / 4, 32, 32);
     newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-    
-    var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad/2, 0);
+
+    var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad / 2, 0);
     // create spikes
     newSphere["spikes"] = [];
     for (var i = 0; i < kSphere.rotMatrixArray.length; i++) {
-        var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad/12, newSphere.rad, 32);
+        var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad / 12, newSphere.rad, 32);
         newSphere.spikes.push({});
         newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, new THREE.MeshNormalMaterial());
         var kRotationMatrix = kSphere.rotMatrixArray[i];
@@ -518,25 +516,25 @@ function generateKSphere() {
         newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
         newSphere.mesh.add(newSphere.spikes[i].mesh);
     }
-    
+
     // set initial location and rotation (random)
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    
+
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
     newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
     newSphere.mesh.setMatrix(newSphere.mat);
-    
+
     // store current position of newSphere
     var pos = new THREE.Vector4(0, 0, 0, 1);
     pos.applyMatrix4(newSphere.mat);
     newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
-    
+
     // add to scene
     scene.add(newSphere.mesh);
-    
+
     return newSphere;
 }
 
@@ -579,7 +577,7 @@ function updateWorld() {
         for (var i = 0; i < mSphere.sph.length; i++) {
             updateMSphere(mSphere.sph[i]);
         }
-        
+
         // DETECT COLLISION
         for (var i = 0; i < sSphere.sph.length; i++) {
             detectCollision(sSphere.sph, i, generateSSphere, false);
@@ -590,8 +588,9 @@ function updateWorld() {
         for (var i = 0; i < kSphere.sph.length; i++) {
             detectCollision(kSphere.sph, i, generateKSphere, true);
         }
-        
+
     }
+    animateParticles();
 }
 
 function updatePSphere() {
@@ -611,10 +610,12 @@ function updateMSphere(curSphere) {
     var randomNum = Math.random();
     if (randomNum <= mSphere.rotChance) {
         var rotationMatrix = getRandomRotationMatrix();
+        //curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
     } else {
-        var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
+          var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
             ((1 / curSphere.rad) * mSphere.speed));
+
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, translationMatrix);
     }
     // update current position of curSphere
@@ -657,11 +658,11 @@ function updateSize() {
 // Game Over
 function gameEndScenario(s) {
     scene.remove(pSphere.mesh);
-    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+    particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
     scene.add(particleSystem);
     freeze = true;
     isGameOver = true;
-    document.getElementById("endGame").innerHTML = 
+    document.getElementById("endGame").innerHTML =
         "Game Over!" + "<br />" + "Press Space to Restart";
     document.getElementById("endGameDescrip").innerHTML = s;
 }
@@ -680,7 +681,7 @@ function keyEvent(event) {
         grid_state = !grid_state;
         grid_state ? scene.add(grid) : scene.remove(grid);
     }
-    
+
     // PAUSE GAME and RESTART GAME
     else if (keyboard.eventMatches(event, "space")) {
         if (!isGameOver) {
@@ -753,7 +754,6 @@ function update() {
     stats.begin();
     updateWorld();
     stats.end();
-    animateParticles();
     requestAnimationFrame(update);
     renderer.render(scene, camera)
 }
