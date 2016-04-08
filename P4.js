@@ -240,7 +240,7 @@ var particleDir = [];
 // Particle Creation
 function createParticles(x, y, z, r) {
     // The number of particles in a particle system is not easily changed
-    var particleCount = 100;
+    var particleCount = parseInt(pSphere.radius) * 100;
 
     // Particles are just individual vertices in a geometry
     // Create the geometry that will hold all of the vertices
@@ -381,6 +381,7 @@ material = new THREE.MeshBasicMaterial({
     map: new THREE.TextureLoader().load(pSphere.texture),
     transparent: true, opacity: 0.5,
 });
+pSphere.speed = pSphere.radius/2;
 pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
