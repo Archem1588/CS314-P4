@@ -117,7 +117,7 @@ var kSphere = {
 
 var sun = {
     mesh: null,
-    radius: 4,
+    radius: 32,
     position: {x: 100, y: 100, z: 100},
     texture: './texture/sun.jpg',
 };
