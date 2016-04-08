@@ -1,92 +1,131 @@
+
+// ======================== SYSTEM SETUP ========================
+
 var scene = new THREE.Scene();
 var clock = new THREE.Clock(false);
 
-// PARTICLE CREATION
-
-
-var particleSystem = new THREE.Points();
-var dirs = [];
-
-function createParticleSystem(x, y, z, r) {
-
-    // The number of particles in a particle system is not easily changed.
-    var particleCount = 100;
-
-    // Particles are just individual vertices in a geometry
-    // Create the geometry that will hold all of the vertices
-    var particles = new THREE.Geometry();
-
-    // Create the vertices and add them to the particles geometry
-    for (var p = 0; p < particleCount; p++) {
-
-        // Create the vertex
-        var pX = x + Math.floor(Math.random() * (2 * r) - r);
-        var pY = y + Math.floor(Math.random() * (2 * r) - r);
-        var pZ = z + Math.floor(Math.random() * (2 * r) - r);
-
-        var particle = new THREE.Vector3(pX, pY, pZ);
-
-        // Add the vertex to the geometry
-        particles.vertices.push(particle);
-        dirs.push({
-            x: (Math.random() * 5) - (5 / 2),
-            y: (Math.random() * 5) - (5 / 2),
-            z: (Math.random() * 5) - (5 / 2)
-        });
-
-    }
-
-// Create the material that will be used to render each vertex of the geometry
-    var particleMaterial = new THREE.PointsMaterial(
-        {
-            color: 0xffffff,
-            size: 4,
-            map: THREE.ImageUtils.loadTexture("./particle.jpg"),
-            blending: THREE.AdditiveBlending,
-            transparent: true
-        });
-
-// Create the particle system
-    particleSystem = new THREE.Points(particles, particleMaterial);
-    particleSystem.sortParticles = true;
-
-    return particleSystem;
-}
-
-// PARTICLE ANIMATION
-function animateParticles() {
-    var deltaTime = clock.getDelta();
-    var verts = particleSystem.geometry.vertices;
-    for (var i = 0; i < verts.length; i++) {
-        var vert = verts[i];
-        vert.x += dirs[i].x;
-        vert.y += dirs[i].y;
-        vert.z += dirs[i].z;
-        //vert.x = vert.x - (10 * deltaTime);
-        //vert.y = vert.y - (10 * deltaTime);
-        //vert.z = vert.z - (10 * deltaTime);
-    }
-    particleSystem.geometry.verticesNeedUpdate = true;
-    particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
-    particleSystem.rotation.y -= .1 * Math.random() * deltaTime
-    particleSystem.rotation.z -= .1 * Math.random() * deltaTime;
-
-}
-
-// SETUP RENDERER
+// RENDERER
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xffffff);
 document.body.appendChild(renderer.domElement);
 
-// SETUP CAMERA
+// CAMERA
 var aspect = window.innerWidth / window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, -100);
-//camera.position.set(50, 50, -50); // for debugging, delete after
+//camera.position.set(50, 50, -50); // TODO: delete after
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-// Lighting and materials
+// ADAPT TO WINDOW RESIZE
+function resize() {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// HELPER GRID (Z to show/hide)
+var gridGeometry = new THREE.Geometry();
+var gridSize = 50;
+for (var i = -gridSize; i < (gridSize + 1); i += 2) {
+    gridGeometry.vertices.push(new THREE.Vector3(i, 0, -gridSize));
+    gridGeometry.vertices.push(new THREE.Vector3(i, 0, gridSize));
+    gridGeometry.vertices.push(new THREE.Vector3(-gridSize, 0, i));
+    gridGeometry.vertices.push(new THREE.Vector3(gridSize, 0, i));
+}
+var gridMaterial = new THREE.LineBasicMaterial({color: 0xBBBBBB});
+var grid = new THREE.Line(gridGeometry, gridMaterial, THREE.LinePieces);
+var grid_state = true;
+scene.add(grid);
+
+
+// ======================== VARIABLES ========================
+
+// General Variables:
+var geometry;
+var material;
+
+// Game
+var isGameOver = false;
+
+// Environment
+var envirn = {
+    size: 60, // box
+};
+
+// Display Board
+var display = {
+    difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
+    timeRemaining: 120,
+    goal: 30,
+    timeLimit: 120,
+};
+
+// Types of spheres:
+//   - player sphere      (pSphere)
+//   - stationary spheres (sSphere)
+//   - mobile spheres     (mSphere)
+//   - spiked spheres     (kSphere)
+
+var pSphere = {
+    // static
+    texture: './earthmap.jpg',
+    speed: 2.0,
+    rotSpeed: Math.PI / 32,
+    sizeIncrRate: 0.4,
+    // dynamic
+    mesh: null,
+    mat: null,
+    pos: new THREE.Vector3(0, 0, 0),
+    radius: 5,
+};
+
+var sSphere = {
+    initAmount: 3,
+    radius: {min: 2, max: 4},
+    sph: [],
+      // rad
+      // mesh
+      // pos
+};
+
+var mSphere = {
+    initAmount: 2,
+    radius: {min: 3, max: 5},
+    speed: 0.8,
+    rotChance: 0.01,
+    sph: [],
+      // rad
+      // mesh
+      // mat
+      // pos
+};
+
+var kSphere = {
+    initAmount: 2,
+    radius: {min: 2, max: 6},
+    speed: 0.5,
+    rotChance: 0.01,
+    rotMatrixArray: [],
+    sph: [],
+      // rad
+      // mesh
+      // mat
+      // pos
+};
+
+var sun = {
+    mesh: null,
+    radius: 4,
+    position: {x: 100, y: 100, z: 100},
+    texture: './texture/sun.jpg',
+};
+
+// ======================== GAME SETUP ========================
+
+// LIGHTING AND SHADING ***************
 
 var lightColor = new THREE.Color(1, 1, 1);
 var ambientColor = new THREE.Color(0.4, 0.4, 0.4);
@@ -121,38 +160,202 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
     phongMaterial.needsUpdate = true;
 });
 
-// ADAPT TO WINDOW RESIZE
-function resize() {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+
+// DISPLAY BOARD **********************
+
+updateDifficulty();
+document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
+updateSize();
+document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
+
+// fps display
+var stats = new Stats();
+stats.setMode(0); // 0: fps, 1: ms, 2: mb
+
+// align left
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.right = '0px';
+stats.domElement.style.top = '0px';
+
+document.body.appendChild(stats.domElement);
+
+
+// COLLISION DETECTION ****************
+
+function detectCollision(collideSphere, i, generateFunc, spiked) {
+    // calculate distance between pSphere and collideSphere
+    var dx = Math.abs(pSphere.pos.x - collideSphere[i].pos.x);
+    var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
+    var dz = Math.abs(pSphere.pos.z - collideSphere[i].pos.z);
+    var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // calculate distance minus radii
+    //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
+    dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
+
+    // collided if dist less than 0
+    if (dist <= 0) {
+        console.log(collideSphere[i].rad);
+        if (pSphere.radius < collideSphere[i].rad) {
+            // TODO explode & game over
+            console.log("YOU ARE EATEN!");
+            eaten(collideSphere, i);
+            i--;
+        } else {
+            eat(collideSphere, i, generateFunc);
+            i--;
+        }
+    }
+
 }
 
-window.addEventListener('resize', resize);
-resize();
-
-// HELPER GRID (Z to show/hide)
-var gridGeometry = new THREE.Geometry();
-var gridSize = 50;
-for (var i = -gridSize; i < (gridSize + 1); i += 2) {
-    gridGeometry.vertices.push(new THREE.Vector3(i, 0, -gridSize));
-    gridGeometry.vertices.push(new THREE.Vector3(i, 0, gridSize));
-    gridGeometry.vertices.push(new THREE.Vector3(-gridSize, 0, i));
-    gridGeometry.vertices.push(new THREE.Vector3(gridSize, 0, i));
+function eat(collideSphere, i, generateFunc) {
+    console.log("Gulp! " + i);
+    pSphere.radius = pSphere.radius + (pSphere.sizeIncrRate * collideSphere[i].rad);
+    var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
+    pSphere.mesh.geometry = geometry;
+    updateSize();
+    scene.remove(collideSphere[i].mesh);
+    collideSphere.splice(i, 1);
+    collideSphere.push(generateFunc());
 }
 
-var gridMaterial = new THREE.LineBasicMaterial({color: 0xBBBBBB});
-var grid = new THREE.Line(gridGeometry, gridMaterial, THREE.LinePieces);
-var grid_state = true;
-scene.add(grid);
+function eaten(collideSphere, i) {
+    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+    scene.add(particleSystem);
+    collideSphere.splice(i, 1); // TODO temporary
+}
 
-// SETTING MATRIX
+
+// PARTICLE SYSTEM ********************
+
+var particleSystem = new THREE.Points();
+var dirs = [];
+
+// Particle Creation
+function createParticleSystem(x, y, z, r) {
+    // The number of particles in a particle system is not easily changed
+    var particleCount = 100;
+    
+    // Particles are just individual vertices in a geometry
+    // Create the geometry that will hold all of the vertices
+    var particles = new THREE.Geometry();
+    
+    // Create the vertices and add them to the particles geometry
+    for (var p = 0; p < particleCount; p++) {
+        
+        // Create the vertex
+        var pX = x + Math.floor(Math.random() * (2 * r) - r);
+        var pY = y + Math.floor(Math.random() * (2 * r) - r);
+        var pZ = z + Math.floor(Math.random() * (2 * r) - r);
+        
+        var particle = new THREE.Vector3(pX, pY, pZ);
+        
+        // Add the vertex to the geometry
+        particles.vertices.push(particle);
+        dirs.push({
+            x: (Math.random() * 5) - (5 / 2),
+            y: (Math.random() * 5) - (5 / 2),
+            z: (Math.random() * 5) - (5 / 2)
+        });
+    }
+    
+    // Create the material that will be used to render each vertex of the geometry
+    var particleMaterial = new THREE.PointsMaterial(
+        {
+            color: 0xffffff,
+            size: 4,
+            map: THREE.ImageUtils.loadTexture("./particle.jpg"),
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+    
+    // Create the particle system
+    particleSystem = new THREE.Points(particles, particleMaterial);
+    particleSystem.sortParticles = true;
+
+    return particleSystem;
+}
+
+// Particle Animation
+function animateParticles() {
+    var deltaTime = clock.getDelta();
+    var verts = particleSystem.geometry.vertices;
+    for (var i = 0; i < verts.length; i++) {
+        var vert = verts[i];
+        vert.x += dirs[i].x;
+        vert.y += dirs[i].y;
+        vert.z += dirs[i].z;
+        //vert.x = vert.x - (10 * deltaTime);
+        //vert.y = vert.y - (10 * deltaTime);
+        //vert.z = vert.z - (10 * deltaTime);
+    }
+    particleSystem.geometry.verticesNeedUpdate = true;
+    particleSystem.rotation.x -= .1 * Math.random() * deltaTime;
+    particleSystem.rotation.y -= .1 * Math.random() * deltaTime
+    particleSystem.rotation.z -= .1 * Math.random() * deltaTime;
+
+}
+
+
+// PICKING ****************************
+
+var container = document.getElementById('container');
+
+var containerWidth = container.clientWidth;
+var containerHeight = container.clientHeight;
+
+raycaster = new THREE.Raycaster();
+mouseVector = new THREE.Vector2();
+window.addEventListener('mousemove', onMouseMove, false);
+
+function onMouseMove(e) {
+    mouseVector.x = 2 * (e.clientX / containerWidth) - 1;
+    mouseVector.y = 1 - 2 * (e.clientY / containerHeight);
+    raycaster.setFromCamera(mouseVector, camera);
+    var intersects = raycaster.intersectObjects(scene.children);
+
+    if (intersects.length == 0) {
+        document.getElementById("selected").innerHTML = "No Object Selected!";
+        return;
+    }
+
+    for (var i = 0; i < intersects.length; i++) {
+        var intersection = intersects[i],
+            obj = intersection.object;
+        var vertices = obj.geometry.vertices;
+        var radius, closestYIndex, farthestYIndex, first = true;
+
+        for (var j = 0; j < vertices.length; j++) {
+            if (first) {
+                first = false;
+                closestYIndex = j;
+                farthestYIndex = j;
+            }
+            else {
+                if (vertices[j].y < vertices[closestYIndex].y) {
+                    closestYIndex = j;
+                }
+                if (vertices[j].y > vertices[farthestYIndex].y) {
+                    farthestYIndex = j;
+                }
+                radius = (vertices[farthestYIndex].y - vertices[closestYIndex].y) / 2;
+            }
+        }
+        document.getElementById("selected").innerHTML = "Selected Object Size: " + parseInt(radius);
+    }
+};
+
+
+// USEFUL FUNCTIONS *******************
+
+// Setting Matrix
 THREE.Object3D.prototype.setMatrix = function (a) {
     this.matrix = a;
     this.matrix.decompose(this.position, this.quaternion, this.scale);
 }
 
-// USEFUL FUNCTIONS
+// Random Generator
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -166,89 +369,7 @@ function getRandomRotationMatrix() {
 }
 
 
-// VARIABLES
-// General variables:
-var geometry;
-var material;
-
-// Environment
-var envirn = {
-    size: 60, // box
-};
-
-// Game Controls
-var gameCtrl = {
-    speed: 2.0,
-    rotationSpeed: Math.PI / 32,
-    sizeIncrRate: 0.4,
-};
-
-// Display Board
-var display = {
-    difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
-    timeRemaining: 120,
-    goal: 30,
-    timeLimit: 120,
-};
-
-
-// Types of spheres:
-//   - player sphere      (pSphere)
-//   - stationary spheres (sSphere)
-//   - mobile spheres     (mSphere)
-//   - spiked spheres     (kSphere)
-
-var pSphere = {
-    mesh: null,
-    mat: null,
-    pos: new THREE.Vector3(0, 0, 0),
-    // properties
-    radius: 5,
-    texture: './earthmap.jpg',
-};
-
-var sSphere = {
-    initAmount: 1,
-    radius: {min: 6, max: 7},
-    sph: [],
-    // rad
-    // mesh
-    // pos
-};
-
-var mSphere = {
-    initAmount: 0,
-    radius: {min: 2, max: 5},
-    speed: 0.8,
-    rotChance: 0.01,
-    sph: [],
-    // rad
-    // mesh
-    // mat
-    // pos
-};
-
-var kSphere = {
-    initAmount: 0,
-    radius: {min: 2, max: 6},
-    speed: 0.5,
-    rotChance: 0.01,
-    sph: [],
-      // rad
-      // mesh
-      // mat
-      // pos
-};
-
-
-// DISPLAY BOARD set up
-updateDifficulty();
-document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
-updateSize();
-document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
-
-
-// CREATING OBJECTS
+// ======================== OBJECT CREATION ========================
 
 // pSphere
 geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
@@ -333,33 +454,32 @@ for (var i = 0; i < mSphere.initAmount; i++) {
 
 // kSphere
 
-var kRotationMatrixArray = [];
 // six basic surfaces
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(0));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/2));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/2));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/2));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(0));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/2));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/2));
 // half angles
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(3*Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-3*Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(3*Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-3*Math.PI/4));
-kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(3*Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationZ(-3*Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(3*Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().makeRotationX(-3*Math.PI/4));
+kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
     new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
     new THREE.Matrix4().makeRotationX(-Math.PI/4)));
-kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
     new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
     new THREE.Matrix4().makeRotationX(Math.PI/4)));
-kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
     new THREE.Matrix4().makeRotationZ(Math.PI/2), 
     new THREE.Matrix4().makeRotationX(-Math.PI/4)));
-kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
     new THREE.Matrix4().makeRotationZ(Math.PI/2), 
     new THREE.Matrix4().makeRotationX(Math.PI/4)));
 
@@ -379,11 +499,11 @@ function generateKSphere() {
     var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad/2, 0);
     // create spikes
     newSphere["spikes"] = [];
-    for (var i = 0; i < kRotationMatrixArray.length; i++) {
+    for (var i = 0; i < kSphere.rotMatrixArray.length; i++) {
         var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad/12, newSphere.rad, 32);
         newSphere.spikes.push({});
         newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, new THREE.MeshNormalMaterial());
-        var kRotationMatrix = kRotationMatrixArray[i];
+        var kRotationMatrix = kSphere.rotMatrixArray[i];
         var kTransformMatrix = new THREE.Matrix4().multiplyMatrices(kRotationMatrix, kTranslationMatrix);
         newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
         newSphere.mesh.add(newSphere.spikes[i].mesh);
@@ -410,68 +530,19 @@ for (var i = 0; i < kSphere.initAmount; i++) {
     kSphere.sph.push(generateKSphere());
 }
 
-
-
 //sun
-geometry = new THREE.SphereGeometry(1, 32, 32);
+geometry = new THREE.SphereGeometry(sun.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load('./texture/sun.jpg')
+        map: new THREE.TextureLoader().load(sun.texture)
     }
 );
-var sun = new THREE.Mesh(geometry, material);
-var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0);
-sun.applyMatrix(translationMatrix);
-scene.add(sun);
+sun.mesh = new THREE.Mesh(geometry, material);
+sun.mesh.applyMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
+scene.add(sun.mesh);
 
 
-// Picking
-var container = document.getElementById('container');
+// ======================== UPDATE ========================
 
-var containerWidth = container.clientWidth;
-var containerHeight = container.clientHeight;
-
-raycaster = new THREE.Raycaster();
-mouseVector = new THREE.Vector2();
-window.addEventListener('mousemove', onMouseMove, false);
-
-function onMouseMove(e) {
-    mouseVector.x = 2 * (e.clientX / containerWidth) - 1;
-    mouseVector.y = 1 - 2 * (e.clientY / containerHeight);
-    raycaster.setFromCamera(mouseVector, camera);
-    var intersects = raycaster.intersectObjects(scene.children);
-
-    if (intersects.length == 0) {
-        document.getElementById("selected").innerHTML = "No Object Selected!";
-        return;
-    }
-
-    for (var i = 0; i < intersects.length; i++) {
-        var intersection = intersects[i],
-            obj = intersection.object;
-        var vertices = obj.geometry.vertices;
-        var radius, closestYIndex, farthestYIndex, first = true;
-
-        for (var j = 0; j < vertices.length; j++) {
-            if (first) {
-                first = false;
-                closestYIndex = j;
-                farthestYIndex = j;
-            }
-            else {
-                if (vertices[j].y < vertices[closestYIndex].y) {
-                    closestYIndex = j;
-                }
-                if (vertices[j].y > vertices[farthestYIndex].y) {
-                    farthestYIndex = j;
-                }
-                radius = (vertices[farthestYIndex].y - vertices[closestYIndex].y) / 2;
-            }
-        }
-        document.getElementById("selected").innerHTML = "Selected Object Size: " + parseInt(radius);
-    }
-};
-
-// UPDATE FUNCTION
 function updateWorld() {
 
     if (!freeze) {
@@ -483,9 +554,9 @@ function updateWorld() {
         // MOUSE EVENTS
         if (mouseDown) {
             var rotationMatrixX = new THREE.Matrix4().makeRotationY(
-                (gameCtrl.rotationSpeed * -mouseX) / window.innerWidth);
+                (pSphere.rotSpeed * -mouseX) / window.innerWidth);
             var rotationMatrixY = new THREE.Matrix4().makeRotationX(
-                (gameCtrl.rotationSpeed * mouseY) / window.innerWidth);
+                (pSphere.rotSpeed * mouseY) / window.innerWidth);
             var rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
             pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
         }
@@ -494,7 +565,6 @@ function updateWorld() {
         for (var i = 0; i < mSphere.sph.length; i++) {
             updateMSphere(mSphere.sph[i]);
         }
-        
         
         // DETECT COLLISION
         for (var i = 0; i < sSphere.sph.length; i++) {
@@ -506,14 +576,13 @@ function updateWorld() {
         for (var i = 0; i < kSphere.sph.length; i++) {
             detectCollision(kSphere.sph, i, generateMSphere, true);
         }
-
-
+        
     }
 }
 
 function updatePSphere() {
     var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
-        ((1 / pSphere.radius) * gameCtrl.speed));
+        ((1 / pSphere.radius) * pSphere.speed));
     pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
 
     // update current position of pSphere
@@ -542,50 +611,6 @@ function updateMSphere(curSphere) {
     curSphere.mesh.setMatrix(curSphere.mat);
 }
 
-// COLLISION DETECTION
-function detectCollision(collideSphere, i, generateFunc, spiked) {
-    // calculate distance between pSphere and collideSphere
-    var dx = Math.abs(pSphere.pos.x - collideSphere[i].pos.x);
-    var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
-    var dz = Math.abs(pSphere.pos.z - collideSphere[i].pos.z);
-    var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-    // calculate distance minus radii
-    //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
-    dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
-
-    // collided if dist less than 0
-    if (dist <= 0) {
-        console.log(collideSphere[i].rad);
-        if (pSphere.radius < collideSphere[i].rad) {
-            // TODO explode & game over
-            console.log("YOU ARE EATEN!");
-            eaten(collideSphere, i);
-            i--;
-        } else {
-            eat(collideSphere, i, generateFunc);
-            i--;
-        }
-    }
-
-}
-
-function eat(collideSphere, i, generateFunc) {
-    console.log("Gulp! " + i);
-    pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * collideSphere[i].rad);
-    var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
-    pSphere.mesh.geometry = geometry;
-    updateSize();
-    scene.remove(collideSphere[i].mesh);
-    collideSphere.splice(i, 1);
-    collideSphere.push(generateFunc());
-}
-
-function eaten(collideSphere, i) {
-    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
-    scene.add(particleSystem);
-    collideSphere.splice(i, 1); // TODO temporary
-}
 
 function updateDifficulty() {
     var text = "";
@@ -601,19 +626,8 @@ function updateDifficulty() {
     document.getElementById("difficulty").innerHTML = text;
 }
 
-var isGameOver = false;
-
-function gameEndScenario(s) {
-    scene.remove(pSphere.mesh);
-    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
-    scene.add(particleSystem);
-    freeze = true;
-    isGameOver = true;
-    document.getElementById("endGame").innerHTML = s;
-}
-
 function updateTime() {
-    //Game Over
+    // Game Over
     if (display.timeRemaining == 110) {
         gameEndScenario("Game Over!" + "<br />" + "Press Space to Restart");
         return;
@@ -626,6 +640,18 @@ function updateSize() {
     document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
 }
 
+function gameEndScenario(s) {
+    scene.remove(pSphere.mesh);
+    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+    scene.add(particleSystem);
+    freeze = true;
+    isGameOver = true;
+    document.getElementById("endGame").innerHTML = s;
+}
+
+
+// ======================== KEYBOARD AND MOUSE ========================
+
 // KEYBOARD CONTROL
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
@@ -637,7 +663,8 @@ function keyEvent(event) {
         grid_state = !grid_state;
         grid_state ? scene.add(grid) : scene.remove(grid);
     }
-    // freeze behaviour (convenient for debugging)
+    
+    // PAUSE GAME
     else if (keyboard.eventMatches(event, "space")) {
         if (!isGameOver) {
             freeze = !freeze;
@@ -657,19 +684,19 @@ function keyEvent(event) {
 
     // ARROW KEYS
     else if (keyboard.eventMatches(event, "right")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(-gameCtrl.rotationSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "left")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(gameCtrl.rotationSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "up")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(-gameCtrl.rotationSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "down")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(gameCtrl.rotationSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
 
@@ -679,9 +706,8 @@ function keyEvent(event) {
             difficulty = 1;
         }
         else {
-            difficulty = difficulty + 1
+            difficulty = difficulty + 1;
         }
-        ;
         updateDifficulty();
     }
 };
@@ -703,17 +729,7 @@ document.addEventListener('mousemove', function (event) {
 });
 
 
-// fps display
-var stats = new Stats();
-stats.setMode(0); // 0: fps, 1: ms, 2: mb
-
-// align left
-stats.domElement.style.position = 'absolute';
-stats.domElement.style.right = '0px';
-stats.domElement.style.top = '0px';
-
-document.body.appendChild(stats.domElement);
-
+// ======================== UPDATE CALL-BACK ========================
 
 // SETUP UPDATE CALL-BACK
 function update() {
