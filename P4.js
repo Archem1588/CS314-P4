@@ -83,7 +83,7 @@ document.body.appendChild(renderer.domElement);
 var aspect = window.innerWidth / window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, -100);
-//camera.position.set(150, 150, -150); // for debugging, delete after
+//camera.position.set(50, 50, -50); // for debugging, delete after
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 // Lighting and materials
@@ -173,7 +173,7 @@ var material;
 
 // Environment
 var envirn = {
-    size: 40, // box
+    size: 60, // box
 };
 
 // Game Controls
@@ -208,8 +208,8 @@ var pSphere = {
 };
 
 var sSphere = {
-    initAmount: 10,
-    radius: {min: 1, max: 3},
+    initAmount: 1,
+    radius: {min: 6, max: 7},
     sph: [],
     // rad
     // mesh
@@ -217,8 +217,8 @@ var sSphere = {
 };
 
 var mSphere = {
-    initAmount: 5,
-    radius: {min: 2, max: 10},
+    initAmount: 0,
+    radius: {min: 2, max: 5},
     speed: 0.8,
     rotChance: 0.01,
     sph: [],
@@ -229,8 +229,8 @@ var mSphere = {
 };
 
 var kSphere = {
-    initAmount: 5,
-    radius: {min: 1, max: 10},
+    initAmount: 0,
+    radius: {min: 2, max: 6},
     speed: 0.5,
     rotChance: 0.01,
     sph: [],
@@ -272,9 +272,9 @@ function generateSSphere() {
     newSphere["rad"] = rad;
 
     // create mesh
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
     newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
 
     // set location (translate to random location)
     var posX = getRandom(-envirn.size, envirn.size);
@@ -304,9 +304,9 @@ function generateMSphere() {
     newSphere["rad"] = rad;
 
     // create mesh
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
     newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
 
     // set initial location and rotation (random)
     var posX = getRandom(-envirn.size, envirn.size);
@@ -330,7 +330,39 @@ for (var i = 0; i < mSphere.initAmount; i++) {
     mSphere.sph.push(generateMSphere());
 }
 
+
 // kSphere
+
+var kRotationMatrixArray = [];
+// six basic surfaces
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(0));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/2));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/2));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+// half angles
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(3*Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationZ(-3*Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(3*Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().makeRotationX(-3*Math.PI/4));
+kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+    new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
+    new THREE.Matrix4().makeRotationX(-Math.PI/4)));
+kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+    new THREE.Matrix4().makeRotationZ(-Math.PI/2), 
+    new THREE.Matrix4().makeRotationX(Math.PI/4)));
+kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+    new THREE.Matrix4().makeRotationZ(Math.PI/2), 
+    new THREE.Matrix4().makeRotationX(-Math.PI/4)));
+kRotationMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
+    new THREE.Matrix4().makeRotationZ(Math.PI/2), 
+    new THREE.Matrix4().makeRotationX(Math.PI/4)));
+
 function generateKSphere() {
     // create sphere object
     var newSphere = {};
@@ -340,9 +372,22 @@ function generateKSphere() {
     newSphere["rad"] = rad;
     
     // create mesh
-    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x00FF00})); // TODO change material
+    geometry = new THREE.SphereGeometry(newSphere.rad/4, 32, 32);
+    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    
+    var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad/2, 0);
+    // create spikes
+    newSphere["spikes"] = [];
+    for (var i = 0; i < kRotationMatrixArray.length; i++) {
+        var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad/12, newSphere.rad, 32);
+        newSphere.spikes.push({});
+        newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, new THREE.MeshNormalMaterial());
+        var kRotationMatrix = kRotationMatrixArray[i];
+        var kTransformMatrix = new THREE.Matrix4().multiplyMatrices(kRotationMatrix, kTranslationMatrix);
+        newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
+        newSphere.mesh.add(newSphere.spikes[i].mesh);
+    }
     
     // set initial location and rotation (random)
     var posX = getRandom(-envirn.size, envirn.size);
@@ -353,7 +398,6 @@ function generateKSphere() {
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
     newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
-    
     newSphere.mesh.setMatrix(newSphere.mat);
     
     // add to scene
@@ -369,13 +413,13 @@ for (var i = 0; i < kSphere.initAmount; i++) {
 
 
 //sun
-geometry = new THREE.SphereGeometry(5, 32, 32);
+geometry = new THREE.SphereGeometry(1, 32, 32);
 material = new THREE.MeshBasicMaterial({
         map: new THREE.TextureLoader().load('./texture/sun.jpg')
     }
 );
 var sun = new THREE.Mesh(geometry, material);
-var translationMatrix = new THREE.Matrix4().makeTranslation(20, 60, 20);
+var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, 0);
 sun.applyMatrix(translationMatrix);
 scene.add(sun);
 
@@ -450,14 +494,17 @@ function updateWorld() {
         for (var i = 0; i < mSphere.sph.length; i++) {
             updateMSphere(mSphere.sph[i]);
         }
-
-
+        
+        
         // DETECT COLLISION
         for (var i = 0; i < sSphere.sph.length; i++) {
-            detectCollision(sSphere.sph, i, generateSSphere);
+            detectCollision(sSphere.sph, i, generateSSphere, false);
         }
         for (var i = 0; i < mSphere.sph.length; i++) {
-            detectCollision(mSphere.sph, i, generateMSphere);
+            detectCollision(mSphere.sph, i, generateMSphere, false);
+        }
+        for (var i = 0; i < kSphere.sph.length; i++) {
+            detectCollision(kSphere.sph, i, generateMSphere, true);
         }
 
 
@@ -496,7 +543,7 @@ function updateMSphere(curSphere) {
 }
 
 // COLLISION DETECTION
-function detectCollision(collideSphere, i, generateFunc) {
+function detectCollision(collideSphere, i, generateFunc, spiked) {
     // calculate distance between pSphere and collideSphere
     var dx = Math.abs(pSphere.pos.x - collideSphere[i].pos.x);
     var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
@@ -509,24 +556,35 @@ function detectCollision(collideSphere, i, generateFunc) {
 
     // collided if dist less than 0
     if (dist <= 0) {
+        console.log(collideSphere[i].rad);
         if (pSphere.radius < collideSphere[i].rad) {
             // TODO explode & game over
             console.log("YOU ARE EATEN!");
-        } else {
-            console.log("Gulp! " + i);
-            pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * collideSphere[i].rad);
-            var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
-            pSphere.mesh.geometry = geometry;
-            updateSize();
-            scene.remove(collideSphere[i].mesh);
-            particleSystem = createParticleSystem(sSphere.sph[i].pos.x, sSphere.sph[i].pos.y, sSphere.sph[i].pos.z, sSphere.sph[i].rad);
-            scene.add(particleSystem);
-            collideSphere.splice(i, 1);
+            eaten(collideSphere, i);
             i--;
-            collideSphere.push(generateFunc());
+        } else {
+            eat(collideSphere, i, generateFunc);
+            i--;
         }
     }
 
+}
+
+function eat(collideSphere, i, generateFunc) {
+    console.log("Gulp! " + i);
+    pSphere.radius = pSphere.radius + (gameCtrl.sizeIncrRate * collideSphere[i].rad);
+    var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
+    pSphere.mesh.geometry = geometry;
+    updateSize();
+    scene.remove(collideSphere[i].mesh);
+    collideSphere.splice(i, 1);
+    collideSphere.push(generateFunc());
+}
+
+function eaten(collideSphere, i) {
+    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+    scene.add(particleSystem);
+    collideSphere.splice(i, 1); // TODO temporary
 }
 
 function updateDifficulty() {
