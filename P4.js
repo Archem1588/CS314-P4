@@ -204,8 +204,8 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
         if (!spiked) {
             if (pSphere.radius < collideSphere[i].rad) {
                 eaten(collideSphere, i);
-                i--;
                 gameEndScenario("You have been eaten by a sphere larger than you.");
+                i--;
             } else {
                 eat(collideSphere, i, generateFunc);
                 i--;
@@ -229,8 +229,6 @@ function eat(collideSphere, i, generateFunc) {
 }
 
 function eaten(collideSphere, i) {
-    particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
-    scene.add(particleSystem);
     collideSphere.splice(i, 1); // TODO temporary
 }
 
@@ -702,19 +700,19 @@ function keyEvent(event) {
     }
 
     // ARROW KEYS
-    else if (keyboard.eventMatches(event, "right")) {
+    else if (keyboard.eventMatches(event, "d")) {
         var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
-    else if (keyboard.eventMatches(event, "left")) {
+    else if (keyboard.eventMatches(event, "a")) {
         var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
-    else if (keyboard.eventMatches(event, "up")) {
+    else if (keyboard.eventMatches(event, "w")) {
         var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
-    else if (keyboard.eventMatches(event, "down")) {
+    else if (keyboard.eventMatches(event, "s")) {
         var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
