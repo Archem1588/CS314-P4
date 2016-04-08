@@ -39,14 +39,16 @@ function createParticleSystem(x, y, z, r) {
 // Create the material that will be used to render each vertex of the geometry
     var particleMaterial = new THREE.PointsMaterial(
         {
-            //color: 0x000000,
+            color: 0xffffff,
             size: 4,
-            map: THREE.ImageUtils.loadTexture("/texture/sun.jpg"),
-            //blending: THREE.AdditiveBlending,
+            map: THREE.ImageUtils.loadTexture("./particle.jpg"),
+            blending: THREE.AdditiveBlending,
+            transparent: true
         });
 
 // Create the particle system
     particleSystem = new THREE.Points(particles, particleMaterial);
+    particleSystem.sortParticles = true;
 
     return particleSystem;
 }
