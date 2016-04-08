@@ -83,7 +83,7 @@ var pSphere = {
 
 var sSphere = {
     initAmount: 6,
-    radius: {min: 2, max: 7},
+    radius: {min: 2, max: 5},
     sph: [],
     // rad
     // mesh
@@ -92,7 +92,7 @@ var sSphere = {
 
 var mSphere = {
     initAmount: 5,
-    radius: {min: 4, max: 9},
+    radius: {min: 4, max: 20},
     speed: 0.8,
     rotChance: 0.01,
     sph: [],
@@ -211,7 +211,7 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
             }
         } else {
             console.log("COLLIDED WITH SPIKED");
-            gameEndScenario("You have been killed by a spiked sphere.");
+            gameEndScenario("Try to avoid the spiked spheres.");
         }
     }
 }
