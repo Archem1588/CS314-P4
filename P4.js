@@ -1,6 +1,5 @@
 var scene = new THREE.Scene();
-var clock = new THREE.Clock(true);
-
+var clock = new THREE.Clock(false);
 
 // PARTICLE CREATION
 
@@ -534,7 +533,7 @@ function keyEvent(event) {
                 clock.stop();
             }
             if (!freeze) {
-                clock.start;
+                clock.start();
             }
         }
         else {
