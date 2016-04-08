@@ -7,7 +7,7 @@ var clock = new THREE.Clock(false);
 // RENDERER
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xffffff);
+renderer.setClearColor(0x000000);
 document.body.appendChild(renderer.domElement);
 
 // CAMERA
@@ -52,16 +52,16 @@ var isGameOver = false;
 
 // Environment
 var envirn = {
-    size: 60, // box
+    size: 100, // box
 };
 
 // Display Board
 var display = {
     difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
-    timeRemaining: 120,
     goal: 30,
     timeLimit: 120,
 };
+display["timeRemaining"] = display.timeLimit;
 
 // Types of spheres:
 //   - player sphere      (pSphere)
@@ -83,8 +83,8 @@ var pSphere = {
 };
 
 var sSphere = {
-    initAmount: 3,
-    radius: {min: 2, max: 4},
+    initAmount: 6,
+    radius: {min: 2, max: 7},
     sph: [],
       // rad
       // mesh
@@ -92,8 +92,8 @@ var sSphere = {
 };
 
 var mSphere = {
-    initAmount: 2,
-    radius: {min: 3, max: 5},
+    initAmount: 5,
+    radius: {min: 4, max: 9},
     speed: 0.8,
     rotChance: 0.01,
     sph: [],
@@ -104,8 +104,8 @@ var mSphere = {
 };
 
 var kSphere = {
-    initAmount: 2,
-    radius: {min: 2, max: 6},
+    initAmount: 5,
+    radius: {min: 2, max: 5},
     speed: 0.5,
     rotChance: 0.01,
     rotMatrixArray: [],
@@ -192,25 +192,33 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
     // calculate distance minus radii
     //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
     dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
-
+    
+    /* 
+    if (spiked) {
+        console.log("spiked: " + kSphere.sph[i].pos.x + " / player: " + pSphere.pos.x + " || spiked: " + kSphere.sph[i].pos.y + " / player: " + pSphere.pos.y + " || spiked: " + kSphere.sph[i].pos.z + " / player: " + pSphere.pos.z);
+    }
+     */
+    
     // collided if dist less than 0
     if (dist <= 0) {
-        console.log(collideSphere[i].rad);
-        if (pSphere.radius < collideSphere[i].rad) {
-            // TODO explode & game over
-            console.log("YOU ARE EATEN!");
-            eaten(collideSphere, i);
-            i--;
+        if (!spiked) {
+            if (pSphere.radius < collideSphere[i].rad) {
+                eaten(collideSphere, i);
+                i--;
+                gameEndScenario("You have been eaten by a sphere larger than you.");
+            } else {
+                eat(collideSphere, i, generateFunc);
+                i--;
+            }
         } else {
-            eat(collideSphere, i, generateFunc);
-            i--;
+            console.log("COLLIDED WITH SPIKED");
+            gameEndScenario("You have been killed by a spiked sphere.");
         }
     }
-
 }
 
 function eat(collideSphere, i, generateFunc) {
-    console.log("Gulp! " + i);
+    //console.log("Gulp! " + i); TODO: delete
     pSphere.radius = pSphere.radius + (pSphere.sizeIncrRate * collideSphere[i].rad);
     var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
     pSphere.mesh.geometry = geometry;
@@ -433,12 +441,16 @@ function generateMSphere() {
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
-
+    
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
     newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
-
+    
+    // store current position of newSphere
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(newSphere.mat);
+    newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
+    
     newSphere.mesh.setMatrix(newSphere.mat);
 
     // add to scene
@@ -513,12 +525,16 @@ function generateKSphere() {
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
-    newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
     
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
     newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
     newSphere.mesh.setMatrix(newSphere.mat);
+    
+    // store current position of newSphere
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(newSphere.mat);
+    newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
     
     // add to scene
     scene.add(newSphere.mesh);
@@ -574,7 +590,7 @@ function updateWorld() {
             detectCollision(mSphere.sph, i, generateMSphere, false);
         }
         for (var i = 0; i < kSphere.sph.length; i++) {
-            detectCollision(kSphere.sph, i, generateMSphere, true);
+            detectCollision(kSphere.sph, i, generateKSphere, true);
         }
         
     }
@@ -628,8 +644,8 @@ function updateDifficulty() {
 
 function updateTime() {
     // Game Over
-    if (display.timeRemaining == 110) {
-        gameEndScenario("Game Over!" + "<br />" + "Press Space to Restart");
+    if (display.timeRemaining == 0) {
+        gameEndScenario("TIME'S UP! You have not reached the goal size within the time limit.");
         return;
     }
     display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
@@ -640,13 +656,16 @@ function updateSize() {
     document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
 }
 
+// Game Over
 function gameEndScenario(s) {
     scene.remove(pSphere.mesh);
     particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
     scene.add(particleSystem);
     freeze = true;
     isGameOver = true;
-    document.getElementById("endGame").innerHTML = s;
+    document.getElementById("endGame").innerHTML = 
+        "Game Over!" + "<br />" + "Press Space to Restart";
+    document.getElementById("endGameDescrip").innerHTML = s;
 }
 
 
@@ -664,7 +683,7 @@ function keyEvent(event) {
         grid_state ? scene.add(grid) : scene.remove(grid);
     }
     
-    // PAUSE GAME
+    // PAUSE GAME and RESTART GAME
     else if (keyboard.eventMatches(event, "space")) {
         if (!isGameOver) {
             freeze = !freeze;
