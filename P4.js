@@ -39,11 +39,10 @@ function createParticleSystem(x, y, z, r) {
 // Create the material that will be used to render each vertex of the geometry
     var particleMaterial = new THREE.PointsMaterial(
         {
-            color: 0x000000,
+            //color: 0x000000,
             size: 4,
-            map: THREE.ImageUtils.loadTexture("particle.jpg"),
-            blending: THREE.AdditiveBlending,
-            transparent: true
+            map: THREE.ImageUtils.loadTexture("/texture/sun.jpg"),
+            //blending: THREE.AdditiveBlending,
         });
 
 // Create the particle system
@@ -496,6 +495,7 @@ function gameEndScenario(s) {
     scene.remove(pSphere.mesh);
     particleSystem = createParticleSystem(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
     scene.add(particleSystem);
+    freeze = true;
     isGameOver = true;
     document.getElementById("endGame").innerHTML = s;
 }
@@ -531,9 +531,11 @@ function keyEvent(event) {
             freeze = !freeze;
             if (freeze) {
                 clock.stop();
+                document.getElementById("endGame").innerHTML = "Game Paused";
             }
             if (!freeze) {
                 clock.start();
+                document.getElementById("endGame").innerHTML = "";
             }
         }
         else {
