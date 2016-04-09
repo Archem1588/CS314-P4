@@ -690,7 +690,12 @@ function gameEndScenario(s) {
 // KEYBOARD CONTROL
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
+function sex(){
 
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+    alert(pSphere.radius);
+}
 var freeze = true;
 function keyEvent(event) {
     // helper grid (convenient for debugging)

@@ -5,43 +5,36 @@
     <style>
         #difficulty {
             color: white;
-            position: absolute;
+            position: fixed;
+            top: 0px;
             z-index: 100;
         }
 
         #time {
             color: white;
             position: fixed;
-            top: 18;
+            top: 18px;
             z-index: 100;
         }
 
         #size {
             color: white;
             position: fixed;
-            top: 36;
+            top: 36px;
             z-index: 100;
         }
 
         #goal {
             color: white;
             position: fixed;
-            top: 54;
-            z-index: 100;
-        }
-
-        #Controls {
-            color: white;
-            position: fixed;
-            bottom: 0;
-            right: 0;
+            top: 54px;
             z-index: 100;
         }
 
         #selected {
             color: white;;
             position: fixed;
-            top: 72;
+            top: 72px;
             z-index: 100;
         }
 
@@ -85,6 +78,17 @@
             color: white;
         }
 
+        #Controls {
+            margin: 10px;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 150;
+            opacity: 0.85;
+            filter: alpha(opacity=85); /* For IE8 and earlier */
+
+        }
+
         body {
             margin: 0;
         }
@@ -103,14 +107,21 @@
 <div id='size'></div>
 <div id='goal'></div>
 <div id='selected'></div>
-<div id='controls'><p>Use WASD or drag mouse to control the earth.</p></div>
 <div id='endGame'><p>Press Space to Start</p></div>
+<div id='Controls'><img src="wasd.png" usemap="#keymap"></div>
 <div id='endGameDescrip'></div>
 <div id='container'></div>
 <script src="js/three.js"></script>
 <script src="js/KeyboardState.js"></script>
 <script src="js/SourceLoader.js"></script>
 <script src="js/stats.js"></script>
+
+<map name="keymap">
+  <area shape="rect" coords="88,0,184,88" onclick="sex()">
+  <area shape="rect" coords="0,90,93,186" href="www.asdf.asdf">
+  <area shape="rect" coords="96,90,189,186" href="www.dsafa.asdf">
+  <area shape="rect" coords="193,90,286,186" href="sdfas">
+</map>
 
 <!--
 <script src="js/material.js"></script>
