@@ -48,7 +48,6 @@ var material;
 
 // Game
 var isGameOver = false;
-var win = false;
 
 // Environment
 var envirn = {
@@ -216,7 +215,6 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
 var textures = [];
 textures.push({tex: './texture/earthmap.jpg', bump: './texture/earthmapbump.jpg'});
 textures.push({tex: './texture/venusmap.jpg', bump: './texture/venusmapbump.jpg'});
-textures.push({tex: './texture/doge.jpg', bump: null});
 textures.push({tex: './texture/jupitermap.jpg', bump: null});
 textures.push({tex: './texture/neptunemap.jpg', bump: null});
 textures.push({tex: './texture/saturnmap.jpg', bump: null});
@@ -260,7 +258,7 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
         if (!spiked) {
             if (pSphere.radius < collideSphere[i].rad) {
                 eaten(collideSphere, i);
-                gameEndScenario("You have been eaten by a sphere larger than you.");
+                gameEndScenario(false, "You have been eaten by a sphere larger than you.");
                 i--;
             } else {
                 eat(collideSphere, i, generateFunc);
@@ -268,7 +266,7 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
             }
         } else {
             console.log("COLLIDED WITH SPIKED");
-            gameEndScenario("Try to avoid the spiked spheres.");
+            gameEndScenario(false, "Try to avoid the spiked spheres.");
         }
     }
 }
@@ -729,7 +727,7 @@ function updateDifficulty() {
 function updateTime() {
     // Game Over
     if (display.timeRemaining == 0) {
-        gameEndScenario("TIME'S UP! You have not reached the goal size within the time limit.");
+        gameEndScenario(false, "TIME'S UP! You have not reached the goal size within the time limit.");
         return;
     }
     display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
@@ -740,26 +738,29 @@ function updateSize() {
     document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
     if (pSphere.radius >= display.goal) {
         win = true;
-        gameEndScenario("You're winner!");
+        gameEndScenario(true, "YOU WON!");
     }
 }
 
 // Game Over
-function gameEndScenario(s) {
+function gameEndScenario(win, s) {
+    var boldText;
     if (win) {
         pSphere.texture = './texture/doge.jpg';
         material = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(pSphere.texture)});
         pSphere.mesh.material = material;
+        s = "";
+        boldText = "YOU'VE WON!";
     }
     if (!win) {
         scene.remove(pSphere.mesh);
         particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
         scene.add(particleSystem);
+        boldText = "Game Over!";
     }
     freeze = true;
     isGameOver = true;
-    document.getElementById("endGame").innerHTML =
-        "Game Over!" + "<br />" + "Press Space to Restart";
+    document.getElementById("endGame").innerHTML = boldText + "<br />" + "Press Space to Restart";
     document.getElementById("endGameDescrip").innerHTML = s;
 }
 
