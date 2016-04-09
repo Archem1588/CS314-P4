@@ -89,6 +89,7 @@ var sSphere = {
     // rad
     // mesh
     // pos
+    // material (shader material)
 };
 
 var mSphere = {
@@ -125,6 +126,44 @@ var sun = {
 
 // ======================== GAME SETUP ========================
 
+// SKYBOX *****************************
+
+var urlPrefix = "./skybox/";
+var urlSuffix = ".jpg";
+var urlPic = "morning/morning_";
+var urlMid = [
+   "ft", "bk",
+   "up", "dn",
+   "rt", "lf"
+];
+var urls = [];
+for (var i = 0; i < 6; i++) {
+    urls[i] = urlPrefix + urlPic + urlMid[i] + urlSuffix;
+}
+
+var cubemap = THREE.ImageUtils.loadTextureCube(urls);
+cubemap.format = THREE.RGBFormat;
+
+var shader = THREE.ShaderLib['cube'];
+shader.uniforms['tCube'].value = cubemap;
+
+var skyBoxMaterial = new THREE.ShaderMaterial( {
+    fragmentShader: shader.fragmentShader,
+    vertexShader: shader.vertexShader,
+    uniforms: shader.uniforms,
+    depthWrite: false,
+    side: THREE.BackSide
+});
+
+var skyboxSize = envirn.size + 100;
+var skybox = new THREE.Mesh(
+  new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize),
+  skyBoxMaterial
+);
+
+scene.add(skybox);
+
+
 // LIGHTING AND SHADING ***************
 
 var lightColor = new THREE.Color(1, 1, 1);
@@ -151,7 +190,9 @@ var phongMaterial = new THREE.ShaderMaterial({
 
 var shaderFiles = [
     'glsl/phong.vs.glsl',
-    'glsl/phong.fs.glsl'
+    'glsl/phong.fs.glsl',
+    'glsl/skybox.vs.glsl',
+    'glsl/skybox.fs.glsl',
 ];
 
 new THREE.SourceLoader().load(shaderFiles, function (shaders) {
@@ -192,12 +233,6 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
     // calculate distance minus radii
     //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
     dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
-
-    /* 
-     if (spiked) {
-     console.log("spiked: " + kSphere.sph[i].pos.x + " / player: " + pSphere.pos.x + " || spiked: " + kSphere.sph[i].pos.y + " / player: " + pSphere.pos.y + " || spiked: " + kSphere.sph[i].pos.z + " / player: " + pSphere.pos.z);
-     }
-     */
 
     // collided if dist less than 0
     if (dist <= 0) {
@@ -397,20 +432,33 @@ function generateSSphere() {
     // set radius
     var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
     newSphere["rad"] = rad;
-
-    // create mesh
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
-    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-
-    // set location (translate to random location)
+    
+    // get random location for position
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
     newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
-    var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
-    newSphere.mesh.applyMatrix(translationMatrix);
-
+    var positionMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
+    
+    // create mesh with shader material
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    newSphere["material"] = new THREE.ShaderMaterial({
+        uniforms: {
+            texUnit : {type : 't', value: cubemap},
+            transMat: {type : 'm4', value: positionMatrix},
+        },
+    });
+    new THREE.SourceLoader().load(shaderFiles, function (shaders) {
+        newSphere.material.vertexShader = shaders['glsl/skybox.vs.glsl'];
+        newSphere.material.fragmentShader = shaders['glsl/skybox.fs.glsl'];
+        newSphere.material.needsUpdate = true;
+    });
+    newSphere["mesh"] = new THREE.Mesh(geometry, newSphere.material);
+    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
+    
+    // translate to position
+    newSphere.mesh.applyMatrix(positionMatrix);
+    
     // add to scene
     scene.add(newSphere.mesh);
 
@@ -719,19 +767,19 @@ function keyEvent(event) {
 
     // ARROW KEYS
     else if (keyboard.eventMatches(event, "d")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed / 4);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "a")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed / 4);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "w")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed / 4);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
     else if (keyboard.eventMatches(event, "s")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed);
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed / 4);
         pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
     }
 
