@@ -1,7 +1,5 @@
-varying vec3 Vnormal;
-varying vec3 VviewPos;
-varying vec3 Vlight;
-
+varying vec3 interpolatedNormal;
+varying vec3 interpolatedPosition;
 uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform vec3 lightPosition;
@@ -11,24 +9,23 @@ uniform vec3 kSpecular;
 uniform float shininess;
 
 void main() {
+    // ambient
+    vec3 ambt = ambientColor * kAmbient;
     
-    // Illumination Ambient
-    vec3 ambient = ambientColor * kAmbient;
+    // diffuse
+    vec3 vecN = normalize(interpolatedNormal);
+    vec3 vecL = normalize(lightPosition - interpolatedPosition);
+    float dotNL = max(0.0, dot(vecN, vecL));
+    vec3 diff = lightColor * kDiffuse * dotNL;
     
-    // Illumination Diffuse
-    vec3 normalVCS = normalize(Vnormal);
-    vec3 lightVCS = normalize(Vlight);
-    float diffuseAngle = dot(normalVCS, lightVCS);
-    vec3 diffuse = kDiffuse * lightColor * diffuseAngle;
+    // specular
+    vec3 vecR = normalize((2.0 * vecN * dotNL) - vecL);
+    vec3 vecV = normalize(-interpolatedPosition);
+    float dotRV = max(0.0, dot(vecR, vecV));
+    vec3 spec = lightColor * kSpecular * pow(dotRV, shininess);
     
-    // Illumination Specular (Phong)
-    vec3 viewVCS = normalize(-VviewPos);
-    vec3 reflectVCS = reflect(-lightVCS, normalVCS);
-    float specAngle = dot(viewVCS, reflectVCS);
-    float n = pow(specAngle, shininess);
-    vec3 specular = kSpecular * lightColor * n;
- 
+    // total illumination
+    vec3 colour = ambt + diff + spec;
     
-    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
-
+    gl_FragColor = vec4(colour, 1.0);
 }

@@ -95,7 +95,7 @@ var sSphere = {
 var mSphere = {
     initAmount: 5,
     radius: {min: 4, max: 20},
-    speed: 0.8,
+    speed: 1.0,
     rotChance: 0.01,
     sph: [],
     // rad
@@ -106,7 +106,7 @@ var mSphere = {
 
 var kSphere = {
     initAmount: 5,
-    radius: {min: 2, max: 5},
+    radius: {min: 3, max: 8},
     speed: 0.5,
     rotChance: 0.01,
     rotMatrixArray: [],
@@ -166,9 +166,19 @@ scene.add(skybox);
 
 // LIGHTING AND SHADING ***************
 
+// Global Lighting
+var ambientLight = new THREE.AmbientLight( 0x777777 );
+scene.add(ambientLight);
+
+globalLight = new THREE.PointLight( 0xffffff, 1, 0 );
+globalLight.castShadow = true;
+globalLight.position.set(sun.position.x, sun.position.y, sun.position.z);
+scene.add(globalLight);
+
+// Phong Lighting
 var lightColor = new THREE.Color(1, 1, 1);
 var ambientColor = new THREE.Color(0.4, 0.4, 0.4);
-var lightPosition = new THREE.Vector3(20, 60, 20);
+var lightPosition = new THREE.Vector3(100, 100, -100);
 
 var kAmbient = new THREE.Color(0.4, 0.2, 0.4);
 var kDiffuse = new THREE.Color(0.8, 0.1, 0.8);
@@ -204,13 +214,14 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
 
 // Textures
 var textures = [];
-textures.push('./texture/doge.jpg');
-textures.push('./texture/jupitermap.jpg');
-textures.push('./texture/neptunemap.jpg');
-textures.push('./texture/saturnmap.jpg');
-textures.push('./texture/uranusmap.jpg');
-textures.push('./texture/venusmap.jpg');
-var bumpmaps = [];
+textures.push({tex: './texture/earthmap.jpg', bump: './texture/earthmapbump.jpg'});
+textures.push({tex: './texture/venusmap.jpg', bump: './texture/venusmapbump.jpg'});
+textures.push({tex: './texture/doge.jpg', bump: null});
+textures.push({tex: './texture/jupitermap.jpg', bump: null});
+textures.push({tex: './texture/neptunemap.jpg', bump: null});
+textures.push({tex: './texture/saturnmap.jpg', bump: null});
+textures.push({tex: './texture/uranusmap.jpg', bump: null});
+
 
 // DISPLAY BOARD **********************
 
@@ -491,9 +502,15 @@ function generateMSphere() {
     // create mesh
     geometry = new THREE.SphereGeometry(rad, 32, 32);
     var randomTexture = getRandom(0, textures.length - 1);
-    var textureMaterial = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load(textures[randomTexture]),
+    var textureMaterial = new THREE.MeshPhongMaterial({
+        map: new THREE.TextureLoader().load(textures[randomTexture].tex),
+        emissive: 0x303030,
     });
+    // TODO : bumpmap not working
+    if (textures[randomTexture].bump != null) {
+        textureMaterial.bumpMap = new THREE.TextureLoader().load(textures[randomTexture].bump);
+        textureMaterial.bumpScale = 0.05;
+    }
     newSphere["mesh"] = new THREE.Mesh(geometry, textureMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
 
@@ -565,7 +582,7 @@ function generateKSphere() {
 
     // create mesh
     geometry = new THREE.SphereGeometry(newSphere.rad / 4, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
+    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
 
     var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad / 2, 0);
@@ -574,7 +591,7 @@ function generateKSphere() {
     for (var i = 0; i < kSphere.rotMatrixArray.length; i++) {
         var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad / 12, newSphere.rad, 32);
         newSphere.spikes.push({});
-        newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, new THREE.MeshNormalMaterial());
+        newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, phongMaterial);
         var kRotationMatrix = kSphere.rotMatrixArray[i];
         var kTransformMatrix = new THREE.Matrix4().multiplyMatrices(kRotationMatrix, kTranslationMatrix);
         newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
