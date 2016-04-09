@@ -122,6 +122,13 @@ var sun = {
     position: {x: 100, y: 100, z: 100},
     texture: './texture/sun.jpg',
 };
+// for detecting collision use
+sun["array"] = [];
+sun.array.push({
+    pos: {x: sun.position.x, y: sun.position.y, z: sun.position.z},
+    rad: sun.radius,
+});
+
 
 // ======================== GAME SETUP ========================
 
@@ -242,7 +249,7 @@ document.body.appendChild(stats.domElement);
 
 // COLLISION DETECTION ****************
 
-function detectCollision(collideSphere, i, generateFunc, spiked) {
+function detectCollision(collideSphere, i, generateFunc, sphereType) {
     // calculate distance between pSphere and collideSphere
     var dx = Math.abs(pSphere.pos.x - collideSphere[i].pos.x);
     var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
@@ -255,24 +262,30 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
 
     // collided if dist less than 0
     if (dist <= 0) {
-        if (!spiked) {
+        switch (sphereType) {
+        case 1:  // sSphere or mSphere
             if (pSphere.radius < collideSphere[i].rad) {
                 eaten(collideSphere, i);
                 gameEndScenario(false, "You have been eaten by a sphere larger than you.");
-                i--;
+                return false;
             } else {
                 eat(collideSphere, i, generateFunc);
-                i--;
+                return true;
             }
-        } else {
-            console.log("COLLIDED WITH SPIKED");
+            break;
+        case 2: // kSphere
             gameEndScenario(false, "Try to avoid the spiked spheres.");
+            return false;
+            break;
+        case 3: // sun
+            gameEndScenario(false, "You have been burned by the sun.");
+            return false;
+            break;
         }
     }
 }
 
 function eat(collideSphere, i, generateFunc) {
-    //console.log("Gulp! " + i); TODO: delete
     pSphere.radius = pSphere.radius + (pSphere.sizeIncrRate * collideSphere[i].rad);
     var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
     pSphere.mesh.geometry = geometry;
@@ -662,14 +675,19 @@ function updateWorld() {
 
         // DETECT COLLISION
         for (var i = 0; i < sSphere.sph.length; i++) {
-            detectCollision(sSphere.sph, i, generateSSphere, false);
+            if (detectCollision(sSphere.sph, i, generateSSphere, 1)) {
+                i--;
+            }
         }
         for (var i = 0; i < mSphere.sph.length; i++) {
-            detectCollision(mSphere.sph, i, generateMSphere, false);
+            if (detectCollision(mSphere.sph, i, generateMSphere, 1)) {
+                i--;
+            }
         }
         for (var i = 0; i < kSphere.sph.length; i++) {
-            detectCollision(kSphere.sph, i, generateKSphere, true);
+            detectCollision(kSphere.sph, i, generateKSphere, 2);
         }
+        detectCollision(sun.array, 0, null, 3);
 
     }
     animateParticles();
