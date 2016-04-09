@@ -55,6 +55,8 @@ var envirn = {
 var cameraPosition = {
     init: {x: 0, y: 0, z: -100},
     step: 1,
+    rotStep: Math.PI/128,
+    parent: null,
 };
 cameraPosition["x"] = cameraPosition.init.x;
 cameraPosition["y"] = cameraPosition.init.y;
@@ -457,6 +459,10 @@ function getRandomRotationMatrix() {
 
 // ======================== OBJECT CREATION ========================
 
+// camera
+cameraPosition.parent = new THREE.Object3D();
+cameraPosition.parent.add(camera);
+
 // pSphere
 geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
@@ -468,7 +474,7 @@ pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
 scene.add(pSphere.mesh);
-pSphere.mesh.add(camera);
+pSphere.mesh.add(cameraPosition.parent);
 
 function createTrackLine(axis, sx, sy, sz, ex, ey, ez) {
     var lineGeometry = new THREE.Geometry();
@@ -878,10 +884,7 @@ function keyEvent(event) {
         cameraPosition.x = cameraPosition.init.x;
         cameraPosition.y = cameraPosition.init.y;
         cameraPosition.z = cameraPosition.init.z;
-        updateCamera();
-    }
-    else if (keyboard.eventMatches(event, "up")) {
-        cameraPosition.y = cameraPosition.y + cameraPosition.step;
+        cameraPosition.parent.setMatrix(new THREE.Matrix4().identity());
         updateCamera();
     }
     else if (keyboard.eventMatches(event, "i")) {
@@ -898,16 +901,21 @@ function keyEvent(event) {
         cameraPosition.z = newZ;
         updateCamera();
     }
+    else if (keyboard.eventMatches(event, "up")) {
+        cameraPosition.parent.applyMatrix(new THREE.Matrix4().makeRotationX(cameraPosition.rotStep));
+        updateCamera();
+    }
+    
     else if (keyboard.eventMatches(event, "down")) {
-        cameraPosition.y = cameraPosition.y - cameraPosition.step;
+        cameraPosition.parent.applyMatrix(new THREE.Matrix4().makeRotationX(-cameraPosition.rotStep));
         updateCamera();
     }
     else if (keyboard.eventMatches(event, "left")) {
-        cameraPosition.x = cameraPosition.x + cameraPosition.step;
+        cameraPosition.parent.applyMatrix(new THREE.Matrix4().makeRotationY(-cameraPosition.rotStep));
         updateCamera();
     }
     else if (keyboard.eventMatches(event, "right")) {
-        cameraPosition.x = cameraPosition.x - cameraPosition.step;
+        cameraPosition.parent.applyMatrix(new THREE.Matrix4().makeRotationY(cameraPosition.rotStep));
         updateCamera();
     }
     
