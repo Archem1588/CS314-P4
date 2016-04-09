@@ -12,8 +12,7 @@ document.body.appendChild(renderer.domElement);
 // CAMERA
 var aspect = window.innerWidth / window.innerHeight;
 var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
-camera.position.set(0, 0, -100);
-//camera.position.set(50, 50, -50); // TODO: delete after
+camera.position.set(0, 0, 0);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 // ADAPT TO WINDOW RESIZE
@@ -36,8 +35,7 @@ for (var i = -gridSize; i < (gridSize + 1); i += 2) {
 }
 var gridMaterial = new THREE.LineBasicMaterial({color: 0xBBBBBB});
 var grid = new THREE.Line(gridGeometry, gridMaterial, THREE.LinePieces);
-var grid_state = true;
-scene.add(grid);
+var grid_state = false;
 
 
 // ======================== VARIABLES ========================
@@ -48,11 +46,19 @@ var material;
 
 // Game
 var isGameOver = false;
-
-// Environment
 var envirn = {
-    size: 100, // box
+    size: 100, // container box
+    skyboxDiff: 600, // skybox is this much bigger than container
 };
+
+// Camera
+var cameraPosition = {
+    init: {x: 0, y: 0, z: -100},
+    step: 1,
+};
+cameraPosition["x"] = cameraPosition.init.x;
+cameraPosition["y"] = cameraPosition.init.y;
+cameraPosition["z"] = cameraPosition.init.z;
 
 // Display Board
 var display = {
@@ -74,6 +80,7 @@ var pSphere = {
     speed: 2.0,
     rotSpeed: Math.PI / 32,
     sizeIncrRate: 0.4,
+    trackLine: {x: null, y: null, z: null, on: false},
     // dynamic
     mesh: null,
     mat: null,
@@ -132,6 +139,15 @@ sun.array.push({
 
 // ======================== GAME SETUP ========================
 
+// CAMERA *****************************
+function updateCamera() {
+    camera.position.x = cameraPosition.x;
+    camera.position.y = cameraPosition.y;
+    camera.position.z = cameraPosition.z;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+}
+updateCamera();
+
 // SKYBOX *****************************
 
 var urlPrefix = "./skybox/";
@@ -161,7 +177,7 @@ var skyBoxMaterial = new THREE.ShaderMaterial({
     side: THREE.BackSide
 });
 
-var skyboxSize = envirn.size + 100;
+var skyboxSize = envirn.size + envirn.skyboxDiff;
 var skybox = new THREE.Mesh(
     new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize),
     skyBoxMaterial
@@ -256,9 +272,7 @@ function detectCollision(collideSphere, i, generateFunc, sphereType) {
     var dz = Math.abs(pSphere.pos.z - collideSphere[i].pos.z);
     var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-    // calculate distance minus radii
-    //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
-    dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
+    dist = dist - collideSphere[i].rad - pSphere.radius;
 
     // collided if dist less than 0
     if (dist <= 0) {
@@ -455,6 +469,24 @@ pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
 scene.add(pSphere.mesh);
 pSphere.mesh.add(camera);
+
+function createTrackLine(axis, sx, sy, sz, ex, ey, ez) {
+    var lineGeometry = new THREE.Geometry();
+    material = new THREE.LineBasicMaterial( { color: 0x00FF00 } );
+    var startVertex = new THREE.Vector3(sx, sy, sz);
+    var endVertex = new THREE.Vector3(ex, ey, ez);
+    lineGeometry.vertices.push(startVertex);
+    lineGeometry.vertices.push(endVertex);
+    pSphere.trackLine[axis] = new THREE.Line(lineGeometry, material);
+}
+
+for (var i = 0; i < 3; i++) {
+    createTrackLine("z", 0, 0, 200, 0, 0, -50);
+    createTrackLine("x", 3, 0, 0, -3, 0, 0);
+    createTrackLine("y", 0, 3, 0, 0, -3, 0);
+}
+
+
 
 // sSphere
 function generateSSphere() {
@@ -688,7 +720,6 @@ function updateWorld() {
             detectCollision(kSphere.sph, i, generateKSphere, 2);
         }
         detectCollision(sun.array, 0, null, 3);
-
     }
     animateParticles();
 }
@@ -710,7 +741,6 @@ function updateMSphere(curSphere) {
     var randomNum = Math.random();
     if (randomNum <= mSphere.rotChance) {
         var rotationMatrix = getRandomRotationMatrix();
-        //curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
     } else {
         var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
@@ -818,7 +848,18 @@ function keyEvent(event) {
         }
     }
 
-    // ARROW KEYS
+    // TOGGLE DIFFICULTY
+    else if (keyboard.eventMatches(event, "t")) {
+        if (display.difficulty == 3) {
+            display.difficulty = 1;
+        }
+        else {
+            display.difficulty = display.difficulty + 1;
+        }
+        updateDifficulty();
+    }
+    
+    // MOVEMENT BY KEYBOARD
     else if (keyboard.eventMatches(event, "d")) {
         keyMove("right");
     }
@@ -831,17 +872,61 @@ function keyEvent(event) {
     else if (keyboard.eventMatches(event, "s")) {
         keyMove("down");
     }
-
-    // toggle difficulty
-    else if (keyboard.eventMatches(event, "t")) {
-        if (display.difficulty == 3) {
-            display.difficulty = 1;
-        }
-        else {
-            display.difficulty = display.difficulty + 1;
-        }
-        updateDifficulty();
+    
+    // CAMERA MOVEMENT
+    else if (keyboard.eventMatches(event, "o")) {
+        cameraPosition.x = cameraPosition.init.x;
+        cameraPosition.y = cameraPosition.init.y;
+        cameraPosition.z = cameraPosition.init.z;
+        updateCamera();
     }
+    else if (keyboard.eventMatches(event, "up")) {
+        cameraPosition.y = cameraPosition.y + cameraPosition.step;
+        updateCamera();
+    }
+    else if (keyboard.eventMatches(event, "i")) {
+        var newZ = cameraPosition.z + cameraPosition.step;
+        newZ = Math.min(-cameraPosition.step, newZ);
+        newZ = Math.max(-(envirn.skyboxDiff - 10), newZ);
+        cameraPosition.z = newZ;
+        updateCamera();
+    }
+    else if (keyboard.eventMatches(event, "k")) {
+        var newZ = cameraPosition.z - cameraPosition.step;
+        newZ = Math.min(-cameraPosition.step, newZ);
+        newZ = Math.max(-(envirn.skyboxDiff - 10), newZ);
+        cameraPosition.z = newZ;
+        updateCamera();
+    }
+    else if (keyboard.eventMatches(event, "down")) {
+        cameraPosition.y = cameraPosition.y - cameraPosition.step;
+        updateCamera();
+    }
+    else if (keyboard.eventMatches(event, "left")) {
+        cameraPosition.x = cameraPosition.x + cameraPosition.step;
+        updateCamera();
+    }
+    else if (keyboard.eventMatches(event, "right")) {
+        cameraPosition.x = cameraPosition.x - cameraPosition.step;
+        updateCamera();
+    }
+    
+    // HELPER TRACK LINE
+    else if (keyboard.eventMatches(event, "l")) {
+        if (pSphere.trackLine.on) {
+            pSphere.mesh.remove(pSphere.trackLine.x);
+            pSphere.mesh.remove(pSphere.trackLine.y);
+            pSphere.mesh.remove(pSphere.trackLine.z);
+            pSphere.trackLine.on = false;
+        } else {
+            pSphere.mesh.add(pSphere.trackLine.x);
+            pSphere.mesh.add(pSphere.trackLine.y);
+            pSphere.mesh.add(pSphere.trackLine.z);
+            pSphere.trackLine.on = true;
+        }
+    }
+    
+    
 };
 
 
