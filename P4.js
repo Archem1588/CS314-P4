@@ -48,6 +48,7 @@ var material;
 
 // Game
 var isGameOver = false;
+var win = false;
 
 // Environment
 var envirn = {
@@ -57,7 +58,7 @@ var envirn = {
 // Display Board
 var display = {
     difficulty: 1, // 1 = normal, 2 = hard, 3 = easy
-    goal: 30,
+    goal: 10,
     timeLimit: 120,
 };
 display["timeRemaining"] = display.timeLimit;
@@ -632,14 +633,18 @@ function updateDifficulty() {
     var text = "";
     if (display.difficulty == 1) {
         text = "Difficulty: normal";
+        display.goal = 10;
     }
     if (display.difficulty == 2) {
         text = "Difficulty: hard";
+        display.goal = 20;
     }
     if (display.difficulty == 3) {
         text = "Difficulty: easy";
+        display.goal = 6;
     }
     document.getElementById("difficulty").innerHTML = text;
+    document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
 }
 
 function updateTime() {
@@ -654,13 +659,24 @@ function updateTime() {
 
 function updateSize() {
     document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
+    if (pSphere.radius >= display.goal) {
+        win = true;
+        gameEndScenario("You're winner!");
+    }
 }
 
 // Game Over
 function gameEndScenario(s) {
-    scene.remove(pSphere.mesh);
-    particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
-    scene.add(particleSystem);
+    if (win) {
+        pSphere.texture = './texture/doge.jpg';
+        material = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(pSphere.texture)});
+        pSphere.mesh.material = material;
+    }
+    if (!win) {
+        scene.remove(pSphere.mesh);
+        particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
+        scene.add(particleSystem);
+    }
     freeze = true;
     isGameOver = true;
     document.getElementById("endGame").innerHTML =
@@ -721,11 +737,11 @@ function keyEvent(event) {
 
     // toggle difficulty
     else if (keyboard.eventMatches(event, "t")) {
-        if (difficulty == 3) {
-            difficulty = 1;
+        if (display.difficulty == 3) {
+            display.difficulty = 1;
         }
         else {
-            difficulty = difficulty + 1;
+            display.difficulty = display.difficulty + 1;
         }
         updateDifficulty();
     }
