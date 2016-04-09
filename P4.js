@@ -202,6 +202,16 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
 });
 
 
+// Textures
+var textures = [];
+textures.push('./texture/doge.jpg');
+textures.push('./texture/jupitermap.jpg');
+textures.push('./texture/neptunemap.jpg');
+textures.push('./texture/saturnmap.jpg');
+textures.push('./texture/uranusmap.jpg');
+textures.push('./texture/venusmap.jpg');
+var bumpmaps = [];
+
 // DISPLAY BOARD **********************
 
 updateDifficulty();
@@ -480,7 +490,11 @@ function generateMSphere() {
 
     // create mesh
     geometry = new THREE.SphereGeometry(rad, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
+    var randomTexture = getRandom(0, textures.length - 1);
+    var textureMaterial = new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load(textures[randomTexture]),
+    });
+    newSphere["mesh"] = new THREE.Mesh(geometry, textureMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
 
     // set initial location and rotation (random)
@@ -595,9 +609,9 @@ for (var i = 0; i < kSphere.initAmount; i++) {
 //sun
 geometry = new THREE.SphereGeometry(sun.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load(sun.texture)
-    }
-);
+    map: new THREE.TextureLoader().load(sun.texture)
+});
+
 sun.mesh = new THREE.Mesh(geometry, material);
 sun.mesh.applyMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
 scene.add(sun.mesh);
