@@ -2,48 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7e27aad1-e716-479a-87a0-4793ad5263e1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_bk.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_dn.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_ft.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_lf.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_rt.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_up.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_bk.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_dn.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_ft.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_lf.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_rt.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_up.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmapbump.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmapspec.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_bk.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_dn.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_ft.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_lf.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_rt.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_up.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/jupitermap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_bk.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_dn.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_ft.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_lf.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_rt.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_up.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/neptunemap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/saturnmap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/uranusmap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/venusmap.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/venusmapbump.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/phong2.fs.glsl" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/phong2.vs.glsl" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/skybox.fs.glsl" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/skybox.vs.glsl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/texture/doge.jpg" afterPath="$PROJECT_DIR$/texture/doge.jpg" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.html" afterPath="$PROJECT_DIR$/P4.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.js" afterPath="$PROJECT_DIR$/P4.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/glsl/phong.fs.glsl" afterPath="$PROJECT_DIR$/glsl/phong.fs.glsl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/glsl/phong.vs.glsl" afterPath="$PROJECT_DIR$/glsl/phong.vs.glsl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="cpsc-314-p4-game.iws" />
@@ -69,7 +28,7 @@
       <file leaf-file-name="P4.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P4.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.54285717">
+            <state vertical-scroll-proportion="1.1291429">
               <caret line="115" column="42" selection-start-line="115" selection-start-column="42" selection-end-line="115" selection-end-column="42" />
               <folding />
             </state>
@@ -79,8 +38,8 @@
       <file leaf-file-name="P4.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/P4.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-11.237288">
-              <caret line="840" column="67" selection-start-line="840" selection-start-column="67" selection-end-line="840" selection-end-column="67" />
+            <state vertical-scroll-proportion="-4.762712">
+              <caret line="748" column="16" selection-start-line="748" selection-start-column="9" selection-end-line="748" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -94,8 +53,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/P4.js" />
         <option value="$PROJECT_DIR$/P4.html" />
+        <option value="$PROJECT_DIR$/P4.js" />
       </list>
     </option>
   </component>
@@ -135,6 +94,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -156,13 +116,16 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="FullScreen" value="false" />
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="7e27aad1-e716-479a-87a0-4793ad5263e1" name="Default" comment="" />
@@ -173,29 +136,37 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="915" y="23" width="960" height="1040" extended-state="1" />
+    <frame x="915" y="23" width="960" height="1040" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -205,17 +176,33 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/P4.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="115" column="42" selection-start-line="115" selection-start-column="42" selection-end-line="115" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/P4.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-11.237288">
-          <caret line="840" column="67" selection-start-line="840" selection-start-column="67" selection-end-line="840" selection-end-column="67" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/P4.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-4.762712">
+          <caret line="748" column="16" selection-start-line="748" selection-start-column="9" selection-end-line="748" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/P4.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.54285717">
+        <state vertical-scroll-proportion="1.1291429">
           <caret line="115" column="42" selection-start-line="115" selection-start-column="42" selection-end-line="115" selection-end-column="42" />
           <folding />
         </state>
