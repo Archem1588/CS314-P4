@@ -48,7 +48,6 @@ var material;
 
 // Game
 var isGameOver = false;
-var win = false;
 
 // Environment
 var envirn = {
@@ -89,12 +88,13 @@ var sSphere = {
     // rad
     // mesh
     // pos
+    // material (shader material)
 };
 
 var mSphere = {
     initAmount: 5,
     radius: {min: 4, max: 20},
-    speed: 0.8,
+    speed: 1.0,
     rotChance: 0.01,
     sph: [],
     // rad
@@ -105,7 +105,7 @@ var mSphere = {
 
 var kSphere = {
     initAmount: 5,
-    radius: {min: 2, max: 5},
+    radius: {min: 3, max: 8},
     speed: 0.5,
     rotChance: 0.01,
     rotMatrixArray: [],
@@ -125,11 +125,59 @@ var sun = {
 
 // ======================== GAME SETUP ========================
 
+// SKYBOX *****************************
+
+var urlPrefix = "./skybox/";
+var urlSuffix = ".jpg";
+var urlPic = "morning/morning_";
+var urlMid = [
+    "ft", "bk",
+    "up", "dn",
+    "rt", "lf"
+];
+var urls = [];
+for (var i = 0; i < 6; i++) {
+    urls[i] = urlPrefix + urlPic + urlMid[i] + urlSuffix;
+}
+
+var cubemap = THREE.ImageUtils.loadTextureCube(urls);
+cubemap.format = THREE.RGBFormat;
+
+var shader = THREE.ShaderLib['cube'];
+shader.uniforms['tCube'].value = cubemap;
+
+var skyBoxMaterial = new THREE.ShaderMaterial({
+    fragmentShader: shader.fragmentShader,
+    vertexShader: shader.vertexShader,
+    uniforms: shader.uniforms,
+    depthWrite: false,
+    side: THREE.BackSide
+});
+
+var skyboxSize = envirn.size + 100;
+var skybox = new THREE.Mesh(
+    new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize),
+    skyBoxMaterial
+);
+
+scene.add(skybox);
+
+
 // LIGHTING AND SHADING ***************
 
+// Global Lighting
+var ambientLight = new THREE.AmbientLight(0x777777);
+scene.add(ambientLight);
+
+globalLight = new THREE.PointLight(0xffffff, 1, 0);
+globalLight.castShadow = true;
+globalLight.position.set(sun.position.x, sun.position.y, sun.position.z);
+scene.add(globalLight);
+
+// Phong Lighting
 var lightColor = new THREE.Color(1, 1, 1);
 var ambientColor = new THREE.Color(0.4, 0.4, 0.4);
-var lightPosition = new THREE.Vector3(20, 60, 20);
+var lightPosition = new THREE.Vector3(100, 100, -100);
 
 var kAmbient = new THREE.Color(0.4, 0.2, 0.4);
 var kDiffuse = new THREE.Color(0.8, 0.1, 0.8);
@@ -151,7 +199,9 @@ var phongMaterial = new THREE.ShaderMaterial({
 
 var shaderFiles = [
     'glsl/phong.vs.glsl',
-    'glsl/phong.fs.glsl'
+    'glsl/phong.fs.glsl',
+    'glsl/skybox.vs.glsl',
+    'glsl/skybox.fs.glsl',
 ];
 
 new THREE.SourceLoader().load(shaderFiles, function (shaders) {
@@ -159,6 +209,16 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
     phongMaterial.fragmentShader = shaders['glsl/phong.fs.glsl'];
     phongMaterial.needsUpdate = true;
 });
+
+
+// Textures
+var textures = [];
+textures.push({tex: './texture/earthmap.jpg', bump: './texture/earthmapbump.jpg'});
+textures.push({tex: './texture/venusmap.jpg', bump: './texture/venusmapbump.jpg'});
+textures.push({tex: './texture/jupitermap.jpg', bump: null});
+textures.push({tex: './texture/neptunemap.jpg', bump: null});
+textures.push({tex: './texture/saturnmap.jpg', bump: null});
+textures.push({tex: './texture/uranusmap.jpg', bump: null});
 
 
 // DISPLAY BOARD **********************
@@ -193,18 +253,12 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
     //dist = dist + collideSphere[i].rad - pSphere.radius; // (almost) completely inside pSphere
     dist = dist - collideSphere[i].rad - pSphere.radius; // actual collision
 
-    /* 
-     if (spiked) {
-     console.log("spiked: " + kSphere.sph[i].pos.x + " / player: " + pSphere.pos.x + " || spiked: " + kSphere.sph[i].pos.y + " / player: " + pSphere.pos.y + " || spiked: " + kSphere.sph[i].pos.z + " / player: " + pSphere.pos.z);
-     }
-     */
-
     // collided if dist less than 0
     if (dist <= 0) {
         if (!spiked) {
             if (pSphere.radius < collideSphere[i].rad) {
                 eaten(collideSphere, i);
-                gameEndScenario("You have been eaten by a sphere larger than you.");
+                gameEndScenario(false, "You have been eaten by a sphere larger than you.");
                 i--;
             } else {
                 eat(collideSphere, i, generateFunc);
@@ -212,7 +266,7 @@ function detectCollision(collideSphere, i, generateFunc, spiked) {
             }
         } else {
             console.log("COLLIDED WITH SPIKED");
-            gameEndScenario("Try to avoid the spiked spheres.");
+            gameEndScenario(false, "Try to avoid the spiked spheres.");
         }
     }
 }
@@ -382,7 +436,7 @@ material = new THREE.MeshBasicMaterial({
     map: new THREE.TextureLoader().load(pSphere.texture),
     transparent: true, opacity: 0.5,
 });
-pSphere.speed = pSphere.radius/2;
+pSphere.speed = pSphere.radius / 2;
 pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
@@ -398,18 +452,31 @@ function generateSSphere() {
     var rad = getRandom(sSphere.radius.min, sSphere.radius.max);
     newSphere["rad"] = rad;
 
-    // create mesh
-    geometry = new THREE.SphereGeometry(rad, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial); // material can be used instead
-    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-
-    // set location (translate to random location)
+    // get random location for position
     var posX = getRandom(-envirn.size, envirn.size);
     var posY = getRandom(-envirn.size, envirn.size);
     var posZ = getRandom(-envirn.size, envirn.size);
     newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
-    var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
-    newSphere.mesh.applyMatrix(translationMatrix);
+    var positionMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
+
+    // create mesh with shader material
+    geometry = new THREE.SphereGeometry(rad, 32, 32);
+    newSphere["material"] = new THREE.ShaderMaterial({
+        uniforms: {
+            texUnit: {type: 't', value: cubemap},
+            transMat: {type: 'm4', value: positionMatrix},
+        },
+    });
+    new THREE.SourceLoader().load(shaderFiles, function (shaders) {
+        newSphere.material.vertexShader = shaders['glsl/skybox.vs.glsl'];
+        newSphere.material.fragmentShader = shaders['glsl/skybox.fs.glsl'];
+        newSphere.material.needsUpdate = true;
+    });
+    newSphere["mesh"] = new THREE.Mesh(geometry, newSphere.material);
+    newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
+
+    // translate to position
+    newSphere.mesh.applyMatrix(positionMatrix);
 
     // add to scene
     scene.add(newSphere.mesh);
@@ -432,7 +499,17 @@ function generateMSphere() {
 
     // create mesh
     geometry = new THREE.SphereGeometry(rad, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
+    var randomTexture = getRandom(0, textures.length - 1);
+    var textureMaterial = new THREE.MeshPhongMaterial({
+        map: new THREE.TextureLoader().load(textures[randomTexture].tex),
+        emissive: 0x303030,
+    });
+    // TODO : bumpmap not working
+    if (textures[randomTexture].bump != null) {
+        textureMaterial.bumpMap = new THREE.TextureLoader().load(textures[randomTexture].bump);
+        textureMaterial.bumpScale = 0.05;
+    }
+    newSphere["mesh"] = new THREE.Mesh(geometry, textureMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
 
     // set initial location and rotation (random)
@@ -503,7 +580,7 @@ function generateKSphere() {
 
     // create mesh
     geometry = new THREE.SphereGeometry(newSphere.rad / 4, 32, 32);
-    newSphere["mesh"] = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial()); // TODO change material
+    newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
 
     var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad / 2, 0);
@@ -512,7 +589,7 @@ function generateKSphere() {
     for (var i = 0; i < kSphere.rotMatrixArray.length; i++) {
         var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad / 12, newSphere.rad, 32);
         newSphere.spikes.push({});
-        newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, new THREE.MeshNormalMaterial());
+        newSphere.spikes[i]["mesh"] = new THREE.Mesh(spikeGeometry, phongMaterial);
         var kRotationMatrix = kSphere.rotMatrixArray[i];
         var kTransformMatrix = new THREE.Matrix4().multiplyMatrices(kRotationMatrix, kTranslationMatrix);
         newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
@@ -547,9 +624,9 @@ for (var i = 0; i < kSphere.initAmount; i++) {
 //sun
 geometry = new THREE.SphereGeometry(sun.radius, 32, 32);
 material = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load(sun.texture)
-    }
-);
+    map: new THREE.TextureLoader().load(sun.texture)
+});
+
 sun.mesh = new THREE.Mesh(geometry, material);
 sun.mesh.applyMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
 scene.add(sun.mesh);
@@ -567,12 +644,15 @@ function updateWorld() {
 
         // MOUSE EVENTS
         if (mouseDown) {
-            var rotationMatrixX = new THREE.Matrix4().makeRotationY(
-                (pSphere.rotSpeed * -mouseX) / window.innerWidth);
-            var rotationMatrixY = new THREE.Matrix4().makeRotationX(
-                (pSphere.rotSpeed * mouseY) / window.innerWidth);
-            var rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
-            pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+            if (mouseX <= 414 || mouseY <= 158) {
+                var rotationMatrixX = new THREE.Matrix4().makeRotationY(
+                    (pSphere.rotSpeed * -mouseX) / window.innerWidth);
+                var rotationMatrixY = new THREE.Matrix4().makeRotationX(
+                    (pSphere.rotSpeed * mouseY) / window.innerWidth);
+                var rotationMatrix = new THREE.Matrix4().multiplyMatrices(rotationMatrixX, rotationMatrixY);
+                pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+            }
+
         }
 
         // MOVE mSphere
@@ -615,7 +695,7 @@ function updateMSphere(curSphere) {
         //curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
     } else {
-          var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
+        var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
             ((1 / curSphere.rad) * mSphere.speed));
 
         curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, translationMatrix);
@@ -650,7 +730,7 @@ function updateDifficulty() {
 function updateTime() {
     // Game Over
     if (display.timeRemaining == 0) {
-        gameEndScenario("TIME'S UP! You have not reached the goal size within the time limit.");
+        gameEndScenario(false, "TIME'S UP! You have not reached the goal size within the time limit.");
         return;
     }
     display.timeRemaining = Math.floor(display.timeLimit - clock.getElapsedTime());
@@ -661,26 +741,29 @@ function updateSize() {
     document.getElementById("size").innerHTML = "Current Size: " + parseInt(pSphere.radius);
     if (pSphere.radius >= display.goal) {
         win = true;
-        gameEndScenario("You're winner!");
+        gameEndScenario(true, "YOU WON!");
     }
 }
 
 // Game Over
-function gameEndScenario(s) {
+function gameEndScenario(win, s) {
+    var boldText;
     if (win) {
         pSphere.texture = './texture/doge.jpg';
         material = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(pSphere.texture)});
         pSphere.mesh.material = material;
+        s = "";
+        boldText = "YOU'VE WON!";
     }
     if (!win) {
         scene.remove(pSphere.mesh);
         particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
         scene.add(particleSystem);
+        boldText = "Game Over!";
     }
     freeze = true;
     isGameOver = true;
-    document.getElementById("endGame").innerHTML =
-        "Game Over!" + "<br />" + "Press Space to Restart";
+    document.getElementById("endGame").innerHTML = boldText + "<br />" + "Press Space to Restart";
     document.getElementById("endGameDescrip").innerHTML = s;
 }
 
@@ -690,12 +773,7 @@ function gameEndScenario(s) {
 // KEYBOARD CONTROL
 var keyboard = new THREEx.KeyboardState();
 keyboard.domElement.addEventListener('keydown', keyEvent);
-function sex(){
 
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
-        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
-    alert(pSphere.radius);
-}
 var freeze = true;
 function keyEvent(event) {
     // helper grid (convenient for debugging)
@@ -724,20 +802,16 @@ function keyEvent(event) {
 
     // ARROW KEYS
     else if (keyboard.eventMatches(event, "d")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed);
-        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+        keyMove("right");
     }
     else if (keyboard.eventMatches(event, "a")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed);
-        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+        keyMove("left");
     }
     else if (keyboard.eventMatches(event, "w")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
-        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+        keyMove("up");
     }
     else if (keyboard.eventMatches(event, "s")) {
-        var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed);
-        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+        keyMove("down");
     }
 
     // toggle difficulty
@@ -751,6 +825,26 @@ function keyEvent(event) {
         updateDifficulty();
     }
 };
+
+
+function keyMove(dir) {
+    if (dir == "up") {
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(-pSphere.rotSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+    }
+    if (dir == "down") {
+        var rotationMatrix = new THREE.Matrix4().makeRotationX(pSphere.rotSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+    }
+    if (dir == "left") {
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(pSphere.rotSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+    }
+    if (dir == "right") {
+        var rotationMatrix = new THREE.Matrix4().makeRotationY(-pSphere.rotSpeed);
+        pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, rotationMatrix);
+    }
+}
 
 // MOUSE CONTROL
 var mouseDown = false;

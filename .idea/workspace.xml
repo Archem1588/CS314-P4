@@ -2,8 +2,48 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7e27aad1-e716-479a-87a0-4793ad5263e1" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_bk.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_dn.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_ft.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_lf.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_rt.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/alps/alps_up.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_bk.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_dn.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_ft.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_lf.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_rt.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/craterlake/craterlake_up.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmapbump.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/earthmapspec.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_bk.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_dn.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_ft.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_lf.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_rt.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/iceflats/iceflats_up.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/jupitermap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_bk.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_dn.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_ft.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_lf.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_rt.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/skybox/morning/morning_up.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/neptunemap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/saturnmap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/uranusmap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/venusmap.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/texture/venusmapbump.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/phong2.fs.glsl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/phong2.vs.glsl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/skybox.fs.glsl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/glsl/skybox.vs.glsl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/texture/doge.jpg" afterPath="$PROJECT_DIR$/texture/doge.jpg" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.html" afterPath="$PROJECT_DIR$/P4.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/P4.js" afterPath="$PROJECT_DIR$/P4.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/glsl/phong.fs.glsl" afterPath="$PROJECT_DIR$/glsl/phong.fs.glsl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/glsl/phong.vs.glsl" afterPath="$PROJECT_DIR$/glsl/phong.vs.glsl" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="cpsc-314-p4-game.iws" />
@@ -26,21 +66,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="P4.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="P4.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P4.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.54285717">
+              <caret line="115" column="42" selection-start-line="115" selection-start-column="42" selection-end-line="115" selection-end-column="42" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="P4.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="P4.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/P4.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.52602434">
-              <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
+            <state vertical-scroll-proportion="-11.237288">
+              <caret line="840" column="67" selection-start-line="840" selection-start-column="67" selection-end-line="840" selection-end-column="67" />
               <folding />
             </state>
           </provider>
@@ -51,6 +91,14 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/P4.js" />
+        <option value="$PROJECT_DIR$/P4.html" />
+      </list>
+    </option>
+  </component>
   <component name="JsBuildToolGruntFileManager" detection-done="true" />
   <component name="JsGulpfileManager">
     <detection-done>true</detection-done>
@@ -59,8 +107,8 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="658" />
-    <option name="y" value="4" />
+    <option name="x" value="915" />
+    <option name="y" value="23" />
     <option name="width" value="960" />
     <option name="height" value="1040" />
   </component>
@@ -125,7 +173,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="658" y="4" width="960" height="1040" extended-state="0" />
+    <frame x="915" y="23" width="960" height="1040" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -157,18 +205,18 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/P4.html">
+    <entry file="file://$PROJECT_DIR$/P4.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="-11.237288">
+          <caret line="840" column="67" selection-start-line="840" selection-start-column="67" selection-end-line="840" selection-end-column="67" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/P4.js">
+    <entry file="file://$PROJECT_DIR$/P4.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52602434">
-          <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.54285717">
+          <caret line="115" column="42" selection-start-line="115" selection-start-column="42" selection-end-line="115" selection-end-column="42" />
           <folding />
         </state>
       </provider>
