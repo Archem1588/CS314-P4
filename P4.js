@@ -231,7 +231,9 @@ var shaderFiles = [
     'glsl/phong.vs.glsl',
     'glsl/phong.fs.glsl',
     'glsl/skybox.vs.glsl',
-    'glsl/skybox.fs.glsl',
+    'glsl/reflect.fs.glsl',
+    'glsl/refract.fs.glsl',
+    'glsl/reflectrefract.fs.glsl',
 ];
 
 new THREE.SourceLoader().load(shaderFiles, function (shaders) {
@@ -553,9 +555,20 @@ function generateSSphere() {
             transMat: {type: 'm4', value: positionMatrix},
         },
     });
+    
+    var randomNum = Math.random();
+    var shaderFS;
+    if (randomNum < 0.2) {
+        shaderFS = 'glsl/reflect.fs.glsl';
+    } else if (randomNum > 0.8) {
+        shaderFS = 'glsl/refract.fs.glsl';
+    } else {
+        shaderFS = 'glsl/reflectrefract.fs.glsl';
+    }
+    
     new THREE.SourceLoader().load(shaderFiles, function (shaders) {
         newSphere.material.vertexShader = shaders['glsl/skybox.vs.glsl'];
-        newSphere.material.fragmentShader = shaders['glsl/skybox.fs.glsl'];
+        newSphere.material.fragmentShader = shaders[shaderFS];
         newSphere.material.needsUpdate = true;
     });
     newSphere["mesh"] = new THREE.Mesh(geometry, newSphere.material);
