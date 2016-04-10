@@ -1,5 +1,7 @@
 CPSC 314 P4
 
+We are using 2 grace days by handing this in before 5pm on Sunday, April 10. (The three of us together have 8 grace days left before P4, so we should have 8/3 = 2.6 grace days to use for P4.)
+
 ====================
 WHAT:
 
