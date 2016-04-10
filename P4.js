@@ -92,8 +92,8 @@ var pSphere = {
 };
 
 var sSphere = {
-    initAmount: 15,
-    radius: {min: 2, max: 5},
+    initAmount: 20,
+    radius: {min: 2, max: 8},
     sph: [],
     // rad
     // mesh
@@ -102,7 +102,7 @@ var sSphere = {
 };
 
 var mSphere = {
-    initAmount: 8,
+    initAmount: 10,
     radius: {min: 4, max: 20},
     speed: 1.5,
     rotChance: 0.02,
@@ -114,8 +114,8 @@ var mSphere = {
 };
 
 var kSphere = {
-    initAmount: 7,
-    radius: {min: 3, max: 10},
+    initAmount: 15,
+    radius: {min: 5, max: 15},
     speed: 0.01,
     rotChance: 0.0001,
     rotMatrixArray: [],
@@ -277,9 +277,25 @@ function detectCollision(collideSphere, i, generateFunc, sphereType) {
     var dy = Math.abs(pSphere.pos.y - collideSphere[i].pos.y);
     var dz = Math.abs(pSphere.pos.z - collideSphere[i].pos.z);
     var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-    dist = dist - collideSphere[i].rad - pSphere.radius;
-
+    
+    switch (sphereType) {
+        case 1: // sSphere or mSphere
+            // pSphere needs to pass through sSphere/mSphere center to absorb
+            if (pSphere.radius >= collideSphere[i].rad) {
+                dist = dist - pSphere.radius;
+            } else {
+                dist = dist - collideSphere[i].rad;
+            }
+            break;
+        case 2: // kSphere
+            // any point on pSphere touches any point on kSphere
+            dist = dist - collideSphere[i].rad - pSphere.radius;
+            break;
+        case 3: // Sun
+            dist = dist - collideSphere[i].rad - pSphere.radius;
+            break;
+    }
+    
     // collided if dist less than 0
     if (dist <= 0) {
         switch (sphereType) {
@@ -520,9 +536,10 @@ function generateSSphere() {
     newSphere["rad"] = rad;
 
     // get random location for position
-    var posX = getRandom(-envirn.size, envirn.size);
-    var posY = getRandom(-envirn.size, envirn.size);
-    var posZ = getRandom(-envirn.size, envirn.size);
+    var size = envirn.size - (envirn.size / 6);
+    var posX = getRandom(-size, size);
+    var posY = getRandom(-size, size);
+    var posZ = getRandom(-size, size);
     newSphere["pos"] = new THREE.Vector3(posX, posY, posZ);
     var positionMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
 
