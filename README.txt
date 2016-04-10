@@ -25,7 +25,7 @@ Lighting and Shading: There is ambient lighting and global lighting coming from 
 
 Picking: Player can see the size of any sphere other than the player's sphere by hovering their mouse over the sphere. The size is displayed on the display board on the left top corner of the screen. Implemented using THREE.raycaster.
 
-Texturing: The Sun has texture. The Mobile spheres have texture and some also have bump mapping.
+Texturing: The Sun has texture. The Mobile spheres have texture and some also have bump mapping. The player's sphere also has texture.
 
 On-screen Control Panel: 
 The left-top corner of the screen have displays specifying the
@@ -37,10 +37,11 @@ The left-top corner of the screen have displays specifying the
   - Framerate Counter
 Implemented using HTML and CSS.
 The right-bottom corner of the screen have WASD controls that the player can control the movement of the player's sphere. Implemented using HTML ImageMap calling P4.js onclick and CSS.
+There are two framerate counters. The one on the top right corner is implemented using stats.js. But since it seems like using third party libraries will not satisfy this requirement, we also implemented our own framerate counter, which is displayed at on the display board on the top left corner. FPS is calculated by inversing the difference between the time of the last frame and the current frame. Since the difference is seconds/frame, so the inverse is frames/second. But rather than getting the exactly current frame, it gets the average of the last 30 frames by storing the fps into an array of size 30 (since fluctuations would be too fast to be readable if not average).
 
 Gameplay: Used requestAnimationFrame for each frame, and timing is implemented using THREEjs clock. Similiarily, keyboard and mouse controls are all implememnted using THREEjs keyboard and mouse controls. All objects are children of THREEjs scene.
 
-Advanced Rendering Effects: Some Mobile spheres have textures with bump mapping. The texture and bump mapping on a Mobile sphere is determined by random. The Moblie sphere also has phong lighting and shading on them from a light source coming from the sun. The phong lighting here is implemented using MeshPhongMaterial from THREEjs. The Stationary spheres have reflection/refraction using environment mapping from the skybox that surrounds the game. Some spheres have only reflection, some have only refraction, and some have both. Which one they have is determined by random.
+Advanced Rendering Effects: Some Mobile spheres have textures with bump mapping. The texture and bump mapping on a Mobile sphere is determined by random. The Moblie sphere also has phong lighting and shading on them from a light source coming from the sun. The phong lighting here is implemented using MeshPhongMaterial from THREEjs. The Stationary spheres have reflection/refraction using environment mapping from the skybox that surrounds the game. Some spheres have only reflection, some have only refraction, and some have both. Which one they have is determined by random. Also the player's sphere is transparent to some degrees.
 
 Shaders: The Spiked spheres have phong shading on them using shaders that we wrote ourselves. The lighting for these spheres are given in view cooridinates, meaning the light moves with the camera position (lighting not in world coordinates).
 

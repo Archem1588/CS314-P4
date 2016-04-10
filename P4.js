@@ -2,6 +2,7 @@
 
 var scene = new THREE.Scene();
 var clock = new THREE.Clock(false);
+var clockFPS = new THREE.Clock(true);
 
 // RENDERER
 var renderer = new THREE.WebGLRenderer();
@@ -47,8 +48,8 @@ var material;
 // Game
 var isGameOver = false;
 var envirn = {
-    size: 200, // container box
-    skyboxDiff: 400, // skybox is this much bigger than container
+    size: 150, // container box
+    skyboxDiff: 300, // skybox is this much bigger than container
 };
 
 // Camera
@@ -79,7 +80,7 @@ display["timeRemaining"] = display.timeLimit;
 var pSphere = {
     // static
     texture: './earthmap.jpg',
-    speed: 2.0,
+    speed: 3.0,
     rotSpeed: Math.PI / 32,
     sizeIncrRate: 0.4,
     trackLine: {x: null, y: null, z: null, on: false},
@@ -91,7 +92,7 @@ var pSphere = {
 };
 
 var sSphere = {
-    initAmount: 7,
+    initAmount: 15,
     radius: {min: 2, max: 5},
     sph: [],
     // rad
@@ -101,7 +102,7 @@ var sSphere = {
 };
 
 var mSphere = {
-    initAmount: 6,
+    initAmount: 8,
     radius: {min: 4, max: 20},
     speed: 1.5,
     rotChance: 0.02,
@@ -113,7 +114,7 @@ var mSphere = {
 };
 
 var kSphere = {
-    initAmount: 5,
+    initAmount: 7,
     radius: {min: 3, max: 10},
     speed: 0.01,
     rotChance: 0.0001,
@@ -131,6 +132,7 @@ var sun = {
     radius: 32,
     position: {x: envirn.size, y: envirn.size, z: envirn.size},
     texture: './texture/sun.jpg',
+    rotation: 0,
 };
 // for detecting collision use
 sun["array"] = [];
@@ -253,6 +255,7 @@ updateDifficulty();
 document.getElementById("time").innerHTML = "Time Remaining: " + parseInt(display.timeRemaining);
 updateSize();
 document.getElementById("goal").innerHTML = "Goal: " + parseInt(display.goal);
+document.getElementById("myfps").innerHTML = "Frames Per Second: " + parseInt(0);
 
 // fps display
 var stats = new Stats();
@@ -682,12 +685,6 @@ function generateKSphere() {
     return newSphere;
 }
 
-
-
-
-
-
-
 for (var i = 0; i < kSphere.initAmount; i++) {
     kSphere.sph.push(generateKSphere());
 }
@@ -699,17 +696,43 @@ material = new THREE.MeshBasicMaterial({
 });
 
 sun.mesh = new THREE.Mesh(geometry, material);
-sun.mesh.applyMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
+sun.mesh.setMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
 scene.add(sun.mesh);
 
 
 // ======================== UPDATE ========================
 
-function updateWorld() {
+var currentTime = clockFPS.getElapsedTime();
+var startTime = currentTime;
+var aveFPS = [];
 
+function updateWorld() {
+    
+    currentTime = clockFPS.getElapsedTime();
+    var deltaTime = currentTime - startTime;
+    startTime = currentTime;
+    var myfps = 1 / deltaTime;
+    if (aveFPS.length < 30) {
+        aveFPS.push(myfps);
+    } else {
+        aveFPS.splice(0, 1);
+        aveFPS.push(myfps);
+    }
+    
+    var sum = 0;
+    for (var i = 0; i < aveFPS.length; i++) {
+        sum = sum + aveFPS[i];
+    }
+    var average = Math.round(sum / aveFPS.length);
+    
+    document.getElementById("myfps").innerHTML = "Frames Per Second: " + parseInt(average);
+    
     if (!freeze) {
         updateTime();
 
+        // ROTATE SUN
+        updateSun();
+        
         // MOVE pSphere
         updatePSphere();
 
@@ -753,6 +776,14 @@ function updateWorld() {
         detectCollision(sun.array, 0, null, 3);
     }
     animateParticles();
+}
+
+function updateSun() {
+    sun.rotation = (sun.rotation + Math.PI/1024) % (2 * Math.PI);
+    var translationMatrix = new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z);
+    var rotationMatrix = new THREE.Matrix4().makeRotationY(sun.rotation);
+    var transformMatrix = new THREE.Matrix4().multiplyMatrices(translationMatrix, rotationMatrix);
+    sun.mesh.setMatrix(transformMatrix);
 }
 
 function updatePSphere() {
@@ -842,6 +873,7 @@ function updateSize() {
         gameEndScenario(true, "YOU WON!");
     }
 }
+
 
 // Game Over
 function gameEndScenario(win, s) {
