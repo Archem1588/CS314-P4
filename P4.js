@@ -47,8 +47,8 @@ var material;
 // Game
 var isGameOver = false;
 var envirn = {
-    size: 100, // container box
-    skyboxDiff: 600, // skybox is this much bigger than container
+    size: 200, // container box
+    skyboxDiff: 300, // skybox is this much bigger than container
 };
 
 // Camera
@@ -91,7 +91,7 @@ var pSphere = {
 };
 
 var sSphere = {
-    initAmount: 6,
+    initAmount: 7,
     radius: {min: 2, max: 5},
     sph: [],
     // rad
@@ -101,10 +101,10 @@ var sSphere = {
 };
 
 var mSphere = {
-    initAmount: 5,
+    initAmount: 6,
     radius: {min: 4, max: 20},
-    speed: 5.0,
-    rotChance: 0.01,
+    speed: 1.5,
+    rotChance: 0.04,
     sph: [],
     // rad
     // mesh
@@ -114,7 +114,7 @@ var mSphere = {
 
 var kSphere = {
     initAmount: 5,
-    radius: {min: 3, max: 8},
+    radius: {min: 3, max: 10},
     speed: 0.5,
     rotChance: 0.01,
     rotMatrixArray: [],
@@ -128,7 +128,7 @@ var kSphere = {
 var sun = {
     mesh: null,
     radius: 32,
-    position: {x: 100, y: 100, z: 100},
+    position: {x: envirn.size, y: envirn.size, z: envirn.size},
     texture: './texture/sun.jpg',
 };
 // for detecting collision use
@@ -179,7 +179,7 @@ var skyBoxMaterial = new THREE.ShaderMaterial({
     side: THREE.BackSide
 });
 
-var skyboxSize = envirn.size + envirn.skyboxDiff;
+var skyboxSize = 2 * (envirn.size + envirn.skyboxDiff);
 var skybox = new THREE.Mesh(
     new THREE.BoxGeometry(skyboxSize, skyboxSize, skyboxSize),
     skyBoxMaterial
@@ -450,6 +450,13 @@ function extractPosition(matrix) {
     return new THREE.Vector3(pos.x, pos.y, pos.z);
 }
 
+// Check Position is Inside Environment
+function isOutOfBound(posX, posY, posZ) {
+    return (posX > envirn.size || posX < -envirn.size ||
+            posY > envirn.size || posY < -envirn.size ||
+            posZ > envirn.size || posZ < -envirn.size)
+}
+
 // Random Generator
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -498,8 +505,6 @@ for (var i = 0; i < 3; i++) {
     createTrackLine("x", 3, 0, 0, -3, 0, 0);
     createTrackLine("y", 0, 3, 0, 0, -3, 0);
 }
-
-
 
 // sSphere
 function generateSSphere() {
@@ -551,15 +556,15 @@ function generateMSphere() {
     // create sphere object
     var newSphere = {};
     
-    
     // set radius
     var rad = getRandom(mSphere.radius.min, mSphere.radius.max);
     newSphere["rad"] = rad;
 
     // get random initial location
-    var posX = getRandom(-envirn.size, envirn.size);
-    var posY = getRandom(-envirn.size, envirn.size);
-    var posZ = getRandom(-envirn.size, envirn.size);
+    var size = envirn.size - (envirn.size / 5);
+    var posX = getRandom(-size, size);
+    var posY = getRandom(-size, size);
+    var posZ = getRandom(-size, size);
 
     // create mesh
     geometry = new THREE.SphereGeometry(rad, 32, 32);
@@ -581,10 +586,8 @@ function generateMSphere() {
     newSphere["moveMat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
 
     // set and store current position of newSphere
-    var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(newSphere.moveMat);
-    newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
-    var positionMatrix = new THREE.Matrix4().makeTranslation(newSphere.moveMat);
+    newSphere["pos"] = extractPosition(newSphere.moveMat);
+    var positionMatrix = new THREE.Matrix4().makeTranslation(newSphere.pos.x, newSphere.pos.y, newSphere.pos.z);
     newSphere.mesh.setMatrix(positionMatrix);
 
     // add to scene
@@ -666,9 +669,7 @@ function generateKSphere() {
     newSphere.mesh.setMatrix(newSphere.mat);
 
     // store current position of newSphere
-    var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(newSphere.mat);
-    newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
+    newSphere["pos"] = extractPosition(newSphere.mat);
 
     // add to scene
     scene.add(newSphere.mesh);
@@ -734,8 +735,6 @@ function updateWorld() {
             detectCollision(kSphere.sph, i, generateKSphere, 2);
         }
         detectCollision(sun.array, 0, null, 3);
-        
-        // DETECT COLLISION with wall
     }
     animateParticles();
 }
@@ -743,13 +742,22 @@ function updateWorld() {
 function updatePSphere() {
     var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
         ((1 / pSphere.radius) * pSphere.speed));
-    pSphere.mat = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
-
-    // update current position of pSphere
-    var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(pSphere.mat);
-    pSphere.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
-
+    
+    // detect collision with wall
+    var tempMatrix = new THREE.Matrix4().multiplyMatrices(pSphere.mat, translationMatrix);
+    var pos = extractPosition(tempMatrix);
+    if (isOutOfBound(pos.x, pos.y, pos.z)) {
+        if (!isGameOver) {
+            document.getElementById("environmentBound").innerHTML = "You have gone outside of the environment." + "<br/>" + "Please stay inside the environment";
+        } else {
+            document.getElementById("environmentBound").innerHTML = "";
+        }
+    } else {
+        document.getElementById("environmentBound").innerHTML = "";
+        pSphere.mat = tempMatrix;
+        pSphere.pos = extractPosition(pSphere.mat);
+    }
+    
     pSphere.mesh.setMatrix(pSphere.mat);
 }
 
@@ -759,17 +767,18 @@ function updateMSphere(curSphere) {
         var rotationMatrix = getRandomRotationMatrix();
         curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, rotationMatrix);
     } else {
-        var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
-            ((1 / curSphere.rad) * mSphere.speed));
+        var translateAmount = Math.pow(1 / curSphere.rad, 1/2) * mSphere.speed;
+        var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0, translateAmount);
 
-        curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, translationMatrix);
+        // check detection with wall
+        var tempMatrix = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, translationMatrix);
         
-        var pos = extractPosition(curSphere.moveMat);
-        if (pos.x > envirn.size || pos.x < -envirn.size ||
-            pos.y > envirn.size || pos.y < -envirn.size ||
-            pos.z > envirn.size || pos.z < -envirn.size) {
+        var pos = extractPosition(tempMatrix);
+        if (isOutOfBound(pos.x, pos.y, pos.z)) {
             var outRotationMatrix = new THREE.Matrix4().makeRotationX(Math.PI);
             curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, outRotationMatrix);
+        } else {
+            curSphere.moveMat = tempMatrix;
         }
         
     }
@@ -836,6 +845,8 @@ function gameEndScenario(win, s) {
     }
     freeze = true;
     isGameOver = true;
+    document.getElementById("environmentBound").innerHTML = "";
+    console.log("HIII");
     document.getElementById("endGame").innerHTML = boldText + "<br />" + "Press Space to Restart";
     document.getElementById("endGameDescrip").innerHTML = s;
 }
@@ -862,10 +873,12 @@ function keyEvent(event) {
             if (freeze) {
                 clock.stop();
                 document.getElementById("endGame").innerHTML = "Game Paused";
+                document.getElementById("environmentBound").innerHTML = "";
             }
             if (!freeze) {
                 clock.start();
                 document.getElementById("endGame").innerHTML = "";
+                document.getElementById("environmentBound").innerHTML = "";
             }
         }
         else {
@@ -909,14 +922,12 @@ function keyEvent(event) {
     else if (keyboard.eventMatches(event, "i")) {
         var newZ = cameraPosition.z + cameraPosition.step;
         newZ = Math.min(-cameraPosition.step, newZ);
-        newZ = Math.max(-(envirn.skyboxDiff - 10), newZ);
         cameraPosition.z = newZ;
         updateCamera();
     }
     else if (keyboard.eventMatches(event, "k")) {
         var newZ = cameraPosition.z - cameraPosition.step;
-        newZ = Math.min(-cameraPosition.step, newZ);
-        newZ = Math.max(-(envirn.skyboxDiff - 10), newZ);
+        newZ = Math.max(-envirn.skyboxDiff, newZ);
         cameraPosition.z = newZ;
         updateCamera();
     }
