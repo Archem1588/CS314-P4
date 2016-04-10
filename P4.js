@@ -90,7 +90,7 @@ display["timeRemaining"] = display.timeLimit;
 
 var pSphere = {
     // static
-    texture: './earthmap.jpg',
+    texture: './playertexture.jpg',
     speed: 3.0,
     rotSpeed: Math.PI / 32,
     sizeIncrRate: 0.4,
@@ -168,7 +168,7 @@ updateCamera();
 
 var urlPrefix = "./skybox/";
 var urlSuffix = ".jpg";
-var urlPic = "morning/morning_";
+var urlPic = "morning_";
 var urlMid = [
     "ft", "bk",
     "up", "dn",
@@ -256,10 +256,10 @@ new THREE.SourceLoader().load(shaderFiles, function (shaders) {
 var textures = [];
 textures.push({tex: './texture/earthmap.jpg', bump: './texture/earthmapbump.jpg'});
 textures.push({tex: './texture/venusmap.jpg', bump: './texture/venusmapbump.jpg'});
+textures.push({tex: './texture/plutomap.jpg', bump: './texture/plutomapbump.jpg'});
 textures.push({tex: './texture/jupitermap.jpg', bump: null});
 textures.push({tex: './texture/neptunemap.jpg', bump: null});
 textures.push({tex: './texture/saturnmap.jpg', bump: null});
-textures.push({tex: './texture/uranusmap.jpg', bump: null});
 
 
 // DISPLAY BOARD **********************
