@@ -103,13 +103,13 @@ var sSphere = {
 var mSphere = {
     initAmount: 5,
     radius: {min: 4, max: 20},
-    speed: 1.0,
+    speed: 5.0,
     rotChance: 0.01,
     sph: [],
     // rad
     // mesh
-    // mat
     // pos
+    // moveMat
 };
 
 var kSphere = {
@@ -543,10 +543,16 @@ for (var i = 0; i < sSphere.initAmount; i++) {
 function generateMSphere() {
     // create sphere object
     var newSphere = {};
-
+    
+    
     // set radius
     var rad = getRandom(mSphere.radius.min, mSphere.radius.max);
     newSphere["rad"] = rad;
+
+    // get random initial location
+    var posX = getRandom(-envirn.size, envirn.size);
+    var posY = getRandom(-envirn.size, envirn.size);
+    var posZ = getRandom(-envirn.size, envirn.size);
 
     // create mesh
     geometry = new THREE.SphereGeometry(rad, 32, 32);
@@ -555,29 +561,24 @@ function generateMSphere() {
         map: new THREE.TextureLoader().load(textures[randomTexture].tex),
         emissive: 0x303030,
     });
-    // TODO : bumpmap not working
     if (textures[randomTexture].bump != null) {
         textureMaterial.bumpMap = new THREE.TextureLoader().load(textures[randomTexture].bump);
-        textureMaterial.bumpScale = 0.05;
+        textureMaterial.bumpScale = 2.0;
     }
     newSphere["mesh"] = new THREE.Mesh(geometry, textureMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-
-    // set initial location and rotation (random)
-    var posX = getRandom(-envirn.size, envirn.size);
-    var posY = getRandom(-envirn.size, envirn.size);
-    var posZ = getRandom(-envirn.size, envirn.size);
-
+    
+    // set random location and rotation to movement matrix
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
-    newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
+    newSphere["moveMat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
 
-    // store current position of newSphere
+    // set and store current position of newSphere
     var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(newSphere.mat);
+    pos.applyMatrix4(newSphere.moveMat);
     newSphere["pos"] = new THREE.Vector3(pos.x, pos.y, pos.z);
-
-    newSphere.mesh.setMatrix(newSphere.mat);
+    var positionMatrix = new THREE.Matrix4().makeTranslation(newSphere.moveMat);
+    newSphere.mesh.setMatrix(positionMatrix);
 
     // add to scene
     scene.add(newSphere.mesh);
@@ -747,19 +748,21 @@ function updateMSphere(curSphere) {
     var randomNum = Math.random();
     if (randomNum <= mSphere.rotChance) {
         var rotationMatrix = getRandomRotationMatrix();
-        curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, rotationMatrix);
+        curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, rotationMatrix);
     } else {
         var translationMatrix = new THREE.Matrix4().makeTranslation(0, 0,
             ((1 / curSphere.rad) * mSphere.speed));
 
-        curSphere.mat = new THREE.Matrix4().multiplyMatrices(curSphere.mat, translationMatrix);
+        curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, translationMatrix);
     }
     // update current position of curSphere
     var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(curSphere.mat);
+    pos.applyMatrix4(curSphere.moveMat);
     curSphere.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
-
-    curSphere.mesh.setMatrix(curSphere.mat);
+    
+    // set mSphere to position
+    var positionMatrix = new THREE.Matrix4().makeTranslation(pos.x, pos.y, pos.z);
+    curSphere.mesh.setMatrix(positionMatrix);
 }
 
 
