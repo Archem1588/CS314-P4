@@ -443,6 +443,13 @@ THREE.Object3D.prototype.setMatrix = function (a) {
     this.matrix.decompose(this.position, this.quaternion, this.scale);
 }
 
+// Extract Position
+function extractPosition(matrix) {
+    var pos = new THREE.Vector4(0, 0, 0, 1);
+    pos.applyMatrix4(matrix);
+    return new THREE.Vector3(pos.x, pos.y, pos.z);
+}
+
 // Random Generator
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -712,7 +719,7 @@ function updateWorld() {
             updateMSphere(mSphere.sph[i]);
         }
 
-        // DETECT COLLISION
+        // DETECT COLLISION with other spheres
         for (var i = 0; i < sSphere.sph.length; i++) {
             if (detectCollision(sSphere.sph, i, generateSSphere, 1)) {
                 i--;
@@ -727,6 +734,8 @@ function updateWorld() {
             detectCollision(kSphere.sph, i, generateKSphere, 2);
         }
         detectCollision(sun.array, 0, null, 3);
+        
+        // DETECT COLLISION with wall
     }
     animateParticles();
 }
@@ -754,14 +763,21 @@ function updateMSphere(curSphere) {
             ((1 / curSphere.rad) * mSphere.speed));
 
         curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, translationMatrix);
+        
+        var pos = extractPosition(curSphere.moveMat);
+        if (pos.x > envirn.size || pos.x < -envirn.size ||
+            pos.y > envirn.size || pos.y < -envirn.size ||
+            pos.z > envirn.size || pos.z < -envirn.size) {
+            var outRotationMatrix = new THREE.Matrix4().makeRotationX(Math.PI);
+            curSphere.moveMat = new THREE.Matrix4().multiplyMatrices(curSphere.moveMat, outRotationMatrix);
+        }
+        
     }
     // update current position of curSphere
-    var pos = new THREE.Vector4(0, 0, 0, 1);
-    pos.applyMatrix4(curSphere.moveMat);
-    curSphere.pos = new THREE.Vector3(pos.x, pos.y, pos.z);
+    curSphere.pos = extractPosition(curSphere.moveMat);
     
     // set mSphere to position
-    var positionMatrix = new THREE.Matrix4().makeTranslation(pos.x, pos.y, pos.z);
+    var positionMatrix = new THREE.Matrix4().makeTranslation(curSphere.pos.x, curSphere.pos.y, curSphere.pos.z);
     curSphere.mesh.setMatrix(positionMatrix);
 }
 
@@ -974,7 +990,6 @@ document.addEventListener('mouseup', function (event) {
 document.addEventListener('mousemove', function (event) {
     mouseX = event.clientX - (window.innerWidth / 2);
     mouseY = event.clientY - (window.innerHeight / 2);
-    console.log(mouseY,(window.innerHeight / 2))
 });
 
 
