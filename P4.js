@@ -695,7 +695,7 @@ function updateWorld() {
 
         // MOUSE EVENTS
         if (mouseDown) {
-            if (mouseX <= 414 || mouseY <= 158) {
+            if (mouseX <= (window.innerWidth / 2 - 300) || mouseY <= (window.innerHeight / 2 - 190)) {
                 var rotationMatrixX = new THREE.Matrix4().makeRotationY(
                     (pSphere.rotSpeed * -mouseX) / window.innerWidth);
                 var rotationMatrixY = new THREE.Matrix4().makeRotationX(
@@ -971,6 +971,7 @@ document.addEventListener('mouseup', function (event) {
 document.addEventListener('mousemove', function (event) {
     mouseX = event.clientX - (window.innerWidth / 2);
     mouseY = event.clientY - (window.innerHeight / 2);
+    console.log(mouseY,(window.innerHeight / 2))
 });
 
 
