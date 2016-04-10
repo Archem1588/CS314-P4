@@ -1,6 +1,8 @@
 // ======================== SYSTEM SETUP ========================
 
 var scene = new THREE.Scene();
+var sceneChild = new THREE.Object3D();
+scene.add(sceneChild);
 var clock = new THREE.Clock(false);
 var clockFPS = new THREE.Clock(true);
 
@@ -326,7 +328,7 @@ function eat(collideSphere, i, generateFunc) {
     var geometry = new THREE.SphereGeometry(pSphere.radius, 32, 32);
     pSphere.mesh.geometry = geometry;
     updateSize();
-    scene.remove(collideSphere[i].mesh);
+    sceneChild.remove(collideSphere[i].mesh);
     collideSphere.splice(i, 1);
     collideSphere.push(generateFunc());
 }
@@ -421,7 +423,7 @@ function onMouseMove(e) {
     mouseVector.x = 2 * (e.clientX / containerWidth) - 1;
     mouseVector.y = 1 - 2 * (e.clientY / containerHeight);
     raycaster.setFromCamera(mouseVector, camera);
-    var intersects = raycaster.intersectObjects(scene.children);
+    var intersects = raycaster.intersectObjects(sceneChild.children);
 
     if (intersects.length == 0) {
         document.getElementById("selected").innerHTML = "No Object Selected!";
@@ -507,7 +509,7 @@ pSphere.speed = pSphere.radius / 2;
 pSphere.mesh = new THREE.Mesh(geometry, material);
 pSphere.mat = new THREE.Matrix4().identity();
 pSphere.mesh.setMatrix(pSphere.mat);
-scene.add(pSphere.mesh);
+sceneChild.add(pSphere.mesh);
 pSphere.mesh.add(cameraPosition.parent);
 
 function createTrackLine(axis, sx, sy, sz, ex, ey, ez) {
@@ -563,7 +565,7 @@ function generateSSphere() {
     newSphere.mesh.applyMatrix(positionMatrix);
 
     // add to scene
-    scene.add(newSphere.mesh);
+    sceneChild.add(newSphere.mesh);
 
     return newSphere;
 }
@@ -612,7 +614,7 @@ function generateMSphere() {
     newSphere.mesh.setMatrix(positionMatrix);
 
     // add to scene
-    scene.add(newSphere.mesh);
+    sceneChild.add(newSphere.mesh);
 
     return newSphere;
 }
@@ -697,7 +699,7 @@ function generateKSphere() {
     newSphere.mesh.setMatrix(positionMatrix);
 
     // add to scene
-    scene.add(newSphere.mesh);
+    sceneChild.add(newSphere.mesh);
 
     return newSphere;
 }
@@ -714,7 +716,7 @@ material = new THREE.MeshBasicMaterial({
 
 sun.mesh = new THREE.Mesh(geometry, material);
 sun.mesh.setMatrix(new THREE.Matrix4().makeTranslation(sun.position.x, sun.position.y, sun.position.z));
-scene.add(sun.mesh);
+sceneChild.add(sun.mesh);
 
 
 // ======================== UPDATE ========================
@@ -903,7 +905,7 @@ function gameEndScenario(win, s) {
         boldText = "YOU'RE WINNER!";
     }
     if (!win) {
-        scene.remove(pSphere.mesh);
+        sceneChild.remove(pSphere.mesh);
         particleSystem = createParticles(pSphere.pos.x, pSphere.pos.y, pSphere.pos.z, pSphere.radius);
         scene.add(particleSystem);
         boldText = "Game Over!";
