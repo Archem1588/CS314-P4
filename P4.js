@@ -48,7 +48,7 @@ var material;
 var isGameOver = false;
 var envirn = {
     size: 200, // container box
-    skyboxDiff: 300, // skybox is this much bigger than container
+    skyboxDiff: 400, // skybox is this much bigger than container
 };
 
 // Camera
@@ -104,7 +104,7 @@ var mSphere = {
     initAmount: 6,
     radius: {min: 4, max: 20},
     speed: 1.5,
-    rotChance: 0.04,
+    rotChance: 0.02,
     sph: [],
     // rad
     // mesh
@@ -115,14 +115,15 @@ var mSphere = {
 var kSphere = {
     initAmount: 5,
     radius: {min: 3, max: 10},
-    speed: 0.5,
-    rotChance: 0.01,
+    speed: 0.01,
+    rotChance: 0.0001,
     rotMatrixArray: [],
     sph: [],
     // rad
     // mesh
-    // mat
     // pos
+    // moveMat
+    // spikes
 };
 
 var sun = {
@@ -632,21 +633,28 @@ kSphere.rotMatrixArray.push(new THREE.Matrix4().multiplyMatrices(
     new THREE.Matrix4().makeRotationZ(Math.PI / 2),
     new THREE.Matrix4().makeRotationX(Math.PI / 4)));
 
+// kSphere
 function generateKSphere() {
     // create sphere object
     var newSphere = {};
-
+    
     // set radius
     var rad = getRandom(kSphere.radius.min, kSphere.radius.max);
     newSphere["rad"] = rad;
 
+    // get random initial location
+    var size = envirn.size - (envirn.size / 5);
+    var posX = getRandom(-size, size);
+    var posY = getRandom(-size, size);
+    var posZ = getRandom(-size, size);
+
     // create mesh
-    geometry = new THREE.SphereGeometry(newSphere.rad / 4, 32, 32);
+    geometry = new THREE.SphereGeometry(rad / 4, 32, 32);
     newSphere["mesh"] = new THREE.Mesh(geometry, phongMaterial);
     newSphere.mesh.setMatrix(new THREE.Matrix4().identity());
-
-    var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad / 2, 0);
+    
     // create spikes
+    var kTranslationMatrix = new THREE.Matrix4().makeTranslation(0, newSphere.rad / 2, 0);
     newSphere["spikes"] = [];
     for (var i = 0; i < kSphere.rotMatrixArray.length; i++) {
         var spikeGeometry = new THREE.CylinderGeometry(0, newSphere.rad / 12, newSphere.rad, 32);
@@ -657,25 +665,28 @@ function generateKSphere() {
         newSphere.spikes[i].mesh.applyMatrix(kTransformMatrix);
         newSphere.mesh.add(newSphere.spikes[i].mesh);
     }
-
-    // set initial location and rotation (random)
-    var posX = getRandom(-envirn.size, envirn.size);
-    var posY = getRandom(-envirn.size, envirn.size);
-    var posZ = getRandom(-envirn.size, envirn.size);
-
+    
+    // set random location and rotation to movement matrix
     var translationMatrix = new THREE.Matrix4().makeTranslation(posX, posY, posZ);
     var rotationMatrix = getRandomRotationMatrix();
-    newSphere["mat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
-    newSphere.mesh.setMatrix(newSphere.mat);
+    newSphere["moveMat"] = new THREE.Matrix4().multiplyMatrices(rotationMatrix, translationMatrix);
 
-    // store current position of newSphere
-    newSphere["pos"] = extractPosition(newSphere.mat);
+    // set and store current position of newSphere
+    newSphere["pos"] = extractPosition(newSphere.moveMat);
+    var positionMatrix = new THREE.Matrix4().makeTranslation(newSphere.pos.x, newSphere.pos.y, newSphere.pos.z);
+    newSphere.mesh.setMatrix(positionMatrix);
 
     // add to scene
     scene.add(newSphere.mesh);
 
     return newSphere;
 }
+
+
+
+
+
+
 
 for (var i = 0; i < kSphere.initAmount; i++) {
     kSphere.sph.push(generateKSphere());
@@ -718,6 +729,11 @@ function updateWorld() {
         // MOVE mSphere
         for (var i = 0; i < mSphere.sph.length; i++) {
             updateMSphere(mSphere.sph[i]);
+        }
+        
+        // MOVE kSphere
+        for (var i = 0; i < kSphere.sph.length; i++) {
+            updateMSphere(kSphere.sph[i]);
         }
 
         // DETECT COLLISION with other spheres
@@ -835,7 +851,7 @@ function gameEndScenario(win, s) {
         material = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(pSphere.texture)});
         pSphere.mesh.material = material;
         s = "";
-        boldText = "YOU'VE WON!";
+        boldText = "YOU'RE WINNER!";
     }
     if (!win) {
         scene.remove(pSphere.mesh);
