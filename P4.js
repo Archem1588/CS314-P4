@@ -18,11 +18,20 @@ var camera = new THREE.PerspectiveCamera(30, aspect, 0.1, 10000);
 camera.position.set(0, 0, 0);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+// PICKING
+
+var container = document.getElementById('container');
+
+var containerWidth = container.clientWidth;
+var containerHeight = container.clientHeight;
+
 // ADAPT TO WINDOW RESIZE
 function resize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    containerWidth = container.clientWidth;
+    containerHeight = container.clientHeight;
 }
 window.addEventListener('resize', resize);
 resize();
@@ -410,10 +419,6 @@ function animateParticles() {
 
 // PICKING ****************************
 
-var container = document.getElementById('container');
-
-var containerWidth = container.clientWidth;
-var containerHeight = container.clientHeight;
 
 raycaster = new THREE.Raycaster();
 mouseVector = new THREE.Vector2();
